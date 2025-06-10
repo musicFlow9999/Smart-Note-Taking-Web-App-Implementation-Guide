@@ -30,7 +30,8 @@ export function createApp() {
   })
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Check if this module is being run directly
+if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   const PORT = process.env.PORT || 5000
   createApp().listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
