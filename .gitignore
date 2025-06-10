@@ -1,0 +1,21 @@
+# Deployment artifacts
+backend.zip
+
+# Data files
+backend/documents.json
+*.json
+
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+.env.local
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
