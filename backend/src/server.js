@@ -1,5 +1,11 @@
 import http from 'http'
-import { getAllDocuments, createDocument } from './data.js'
+import {
+  getAllDocuments,
+  createDocument,
+  getDocumentById,
+  updateDocument,
+  deleteDocument
+} from './data.js'
 
 function jsonResponse(res, statusCode, data) {
   res.writeHead(statusCode, { 'Content-Type': 'application/json' })
@@ -8,8 +14,17 @@ function jsonResponse(res, statusCode, data) {
 
 export function createApp() {
   return http.createServer((req, res) => {
+    const idMatch = req.url.match(/^\/api\/documents\/(\w+)$/)
+
     if (req.method === 'GET' && req.url === '/api/documents') {
       jsonResponse(res, 200, { documents: getAllDocuments() })
+    } else if (req.method === 'GET' && idMatch) {
+      const doc = getDocumentById(idMatch[1])
+      if (doc) {
+        jsonResponse(res, 200, doc)
+      } else {
+        jsonResponse(res, 404, { error: 'Not found' })
+      }
     } else if (req.method === 'POST' && req.url === '/api/documents') {
       let body = ''
       req.on('data', chunk => {
@@ -24,6 +39,29 @@ export function createApp() {
           jsonResponse(res, 400, { error: 'Invalid JSON' })
         }
       })
+    } else if ((req.method === 'PUT' || req.method === 'PATCH') && idMatch) {
+      let body = ''
+      req.on('data', c => { body += c })
+      req.on('end', () => {
+        try {
+          const data = JSON.parse(body)
+          const updated = updateDocument(idMatch[1], data)
+          if (updated) {
+            jsonResponse(res, 200, updated)
+          } else {
+            jsonResponse(res, 404, { error: 'Not found' })
+          }
+        } catch {
+          jsonResponse(res, 400, { error: 'Invalid JSON' })
+        }
+      })
+    } else if (req.method === 'DELETE' && idMatch) {
+      const ok = deleteDocument(idMatch[1])
+      if (ok) {
+        jsonResponse(res, 204, null)
+      } else {
+        jsonResponse(res, 404, { error: 'Not found' })
+      }
     } else {
       jsonResponse(res, 404, { error: 'Not found' })
     }
