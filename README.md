@@ -51,4 +51,25 @@ The following improvements are recommended but not yet implemented:
 - Expand tests to cover edge cases and database logic once added.
 - Set up continuous integration to run tests automatically.
 
+### Deploying to Azure
+
+If you use Azure, you can host the backend on Azure App Service:
+
+1. Install the Azure CLI and sign in with `az login`.
+2. Create a resource group and App Service plan:
+   ```bash
+   az group create --name smart-notes-rg --location eastus
+   az appservice plan create --name smart-notes-plan --resource-group smart-notes-rg --sku B1 --is-linux
+   ```
+3. Create the web app and deploy the Node.js backend:
+   ```bash
+   az webapp create --resource-group smart-notes-rg --plan smart-notes-plan \
+     --name <your-app-name> --runtime "NODE|18-lts"
+   az webapp deploy --resource-group smart-notes-rg --name <your-app-name> \
+     --src-path backend
+   ```
+4. Set the `PORT` environment variable in the web app settings if needed.
+
+This deploys the API to Azure so it can be accessed publicly.
+
 
