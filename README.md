@@ -24,6 +24,7 @@ memory. The server is intended as a starting point for further development.
    ```
 
    The API will be available at `http://localhost:5000` by default.
+   Set the `DATA_FILE` environment variable to persist documents to a JSON file.
 
 3. Run the test suite:
 
@@ -39,8 +40,8 @@ memory. The server is intended as a starting point for further development.
 - `PUT /api/documents/:id` – update a document
 - `DELETE /api/documents/:id` – remove a document
 
-Data is stored in memory so it will reset when the server restarts.
-Consider adding a database or persistence layer for a real application.
+By default, documents are stored in memory so they reset when the server restarts.
+Set a `DATA_FILE` path to persist them across sessions, or consider using a database for a real application.
 
 ## Next Steps
 
@@ -49,7 +50,7 @@ The following improvements are recommended but not yet implemented:
 - Use a database (e.g. SQLite, MongoDB) instead of the in-memory array.
 - Create a frontend interface to interact with the API.
 - Expand tests to cover edge cases and database logic once added.
-- Set up continuous integration to run tests automatically.
+- Continuous integration is configured with GitHub Actions to run tests automatically.
 - Configure continuous deployment to Azure with GitHub Actions.
 - Set up a custom domain and HTTPS for the web app.
 - Add authentication and user management.

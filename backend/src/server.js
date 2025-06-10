@@ -5,7 +5,7 @@ import {
   getDocumentById,
   updateDocument,
   deleteDocument
-} from './data.js'
+} from './store.js'
 
 function jsonResponse(res, statusCode, data) {
   res.writeHead(statusCode, { 'Content-Type': 'application/json' })
