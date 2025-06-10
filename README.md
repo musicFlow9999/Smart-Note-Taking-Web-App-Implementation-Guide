@@ -50,6 +50,9 @@ The following improvements are recommended but not yet implemented:
 - Create a frontend interface to interact with the API.
 - Expand tests to cover edge cases and database logic once added.
 - Set up continuous integration to run tests automatically.
+- Configure continuous deployment to Azure with GitHub Actions.
+- Set up a custom domain and HTTPS for the web app.
+- Add authentication and user management.
 
 ### Deploying to Azure
 
@@ -64,12 +67,24 @@ If you use Azure, you can host the backend on Azure App Service:
 3. Create the web app and deploy the Node.js backend:
    ```bash
    az webapp create --resource-group smart-notes-rg --plan smart-notes-plan \
-     --name <your-app-name> --runtime "NODE|18-lts"
+     --name <your-app-name> --runtime "NODE|20-lts"
    az webapp deploy --resource-group smart-notes-rg --name <your-app-name> \
      --src-path backend
    ```
 4. Set the `PORT` environment variable in the web app settings if needed.
 
 This deploys the API to Azure so it can be accessed publicly.
+
+### Deployed Instance
+
+The backend is currently running on Azure and can be accessed at:
+
+- URL: <http://smart-notes-app-lamb2025.azurewebsites.net>
+- Resource Group: `smart-notes-rg-west` (West US)
+- App Service Plan: `smart-notes-plan` (Free tier)
+- Web App Name: `smart-notes-app-lamb2025`
+- Runtime: Node.js 20 LTS
+
+The `GET /api/documents` and `POST /api/documents` endpoints have been tested and are working as expected. A test entry titled "Azure Test Document" was successfully stored.
 
 
