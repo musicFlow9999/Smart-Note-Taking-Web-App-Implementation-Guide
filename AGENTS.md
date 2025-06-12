@@ -50,7 +50,7 @@ This document describes the interactions and roles of the AI agents involved in 
     
     **Purpose:** Maintain a bidirectional record of updates and instructions so each agent knows what the other has changed. `codexlastupdate.md` lets Claude Sonnet track Codex's recent updates and read any instructions from Codex, including which dependencies must be installed or unignored for Codex's tests. `claudes4lastupdate.md` informs Codex of Claude Sonnet's latest updates and guidance.
 
-    **Next Steps Tracking:** Codex must include a **Next Steps** section in every `codexlastupdate.md` summarizing the immediate development tasks. Claude Sonnet reads this section whenever it pulls the latest repository state and uses it to determine its next actions.
+    **Next Steps Tracking:** Codex must include a **Next Steps** section in every `codexlastupdate.md` summarizing the immediate tasks. The section must clearly separate duties for Claude from coding work. Provide two bullet lists labeled **For Claude** and **For Code**. Claude Sonnet reads this section whenever it pulls the repository to determine its next actions.
 
     * **Repository Management:** Always ensure the following core dependencies are present in `backend/package.json` when pushing changes to the repository:
     
