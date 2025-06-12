@@ -45,8 +45,7 @@ This document describes the interactions and roles of the AI agents involved in 
     
     **Timestamp Format:** Use ISO format `YYYY-MM-DD-HHMMSS` (e.g., `codexlastupdate-2025-06-11-143022.md`)
     
-    **Purpose:** Provide Codex with historical context of code changes, implementation decisions, and evolution of the codebase for more informed code generation and suggestions.
-  * **Repository Management:** Always ensure the following core dependencies are present in `backend/package.json` when pushing changes to the repository:
+    **Purpose:** Provide Codex with historical context of code changes, implementation decisions, and evolution of the codebase for more informed code generation and suggestions.  * **Repository Management:** Always ensure the following core dependencies are present in `backend/package.json` when pushing changes to the repository:
     
     **Production Dependencies:**
     ```json
@@ -64,6 +63,21 @@ This document describes the interactions and roles of the AI agents involved in 
       "eslint": "^8.57.0",
       "prettier": "^3.1.1"
     }
+    ```
+  * **Repository Backup Trigger:** When the user writes "AGENT BACKUP REPO", immediately create a complete backup of the entire repository:
+    
+    **Backup Process:**
+    - Source: `C:\github\Smart-Note-Taking-Web-App-Implementation-Guide`
+    - Destination: `C:\github\Backups\NOTESAPP-YYYY-MM-DD-HHMMSS`
+    - Copy all files and folders recursively
+    - Exclude `.git` folder from backup (config files and source code only)
+    - Timestamp format: ISO `YYYY-MM-DD-HHMMSS` (e.g., `NOTESAPP-2025-06-11-230145`)
+    
+    **Backup Command Example:**
+    ```powershell
+    $timestamp = Get-Date -Format "yyyy-MM-dd-HHmmss"
+    $destination = "C:\github\Backups\NOTESAPP-$timestamp"
+    Copy-Item -Path "C:\github\Smart-Note-Taking-Web-App-Implementation-Guide\*" -Destination $destination -Recurse -Exclude ".git"
     ```
 
 ## Interaction Workflow
@@ -91,6 +105,7 @@ This document describes the interactions and roles of the AI agents involved in 
    * **Dependency Verification:** Claude Sonnet must verify that all required dependencies are present in `package.json` before any repository push operations.
    * **Configuration Integrity:** Ensure critical configuration files (`.eslintrc.json`, `.prettierrc.json`, `azure.json`) are not excluded by `.gitignore` rules.
    * **Documentation Archiving:** Claude Sonnet creates timestamped archive of `codexlastupdate.md` before each push and maintains rolling archive of up to 5 copies for Codex reference.
+   * **Repository Backup:** When user requests "AGENT BACKUP REPO", Claude Sonnet immediately creates timestamped backup to `C:\github\Backups\NOTESAPP-YYYY-MM-DD-HHMMSS`.
 
 5. **Documentation and Knowledge Transfer:**
 
