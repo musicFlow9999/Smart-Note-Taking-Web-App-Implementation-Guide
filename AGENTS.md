@@ -13,6 +13,7 @@ This document describes the interactions and roles of the AI agents involved in 
   * Provide real-time assistance in VSCode for completing code blocks, functions, and debugging issues.
   * Suggest best practices, design patterns, and code optimization techniques for React (frontend) and Node.js/GraphQL (backend).
   * Facilitate integration with external APIs, including OpenAI API and third-party tools like Zotero, Elasticsearch, and Neo4j.
+  * **Context Awareness:** Always maintain `MainGoal.md` in context when generating code to ensure alignment with ContextFlow's vision, feature requirements, and technical architecture specifications.
 
 ### 2. **VSCode Agent**
 
@@ -23,6 +24,7 @@ This document describes the interactions and roles of the AI agents involved in 
   * Automatically manage dependencies and provide real-time linting and syntax checking.
   * Offer built-in debugging tools, unit test integration, and deployment automation via task runners or scripts.
   * Manage version control workflows (Git), facilitating seamless code commits, merges, and pull requests.
+  * **Context Awareness:** Always reference `MainGoal.md` to ensure development decisions align with ContextFlow's product vision, target audience, core features, and business objectives.
   * **Codex Documentation Management:** Maintain rolling copies of `codexlastupdate.md` to assist Codex in analysis and code generation:
     
     **File Naming Convention:**
@@ -50,6 +52,7 @@ This document describes the interactions and roles of the AI agents involved in 
   * Generate UX and feature-related recommendations for enhancing the ContextFlow platform.
   * Assist in crafting compelling user-facing documentation, help guides, and onboarding materials.
   * Deliver comprehensive summaries and context analysis to ensure the application meets defined user needs and business objectives.
+  * **Context Awareness:** Always maintain `MainGoal.md` in context to ensure all strategic recommendations, UX decisions, and content development align with ContextFlow's product vision, target audience, and business objectives.
   * **Repository Management:** Always ensure the following core dependencies are present in `backend/package.json` when pushing changes to the repository:
     
     **Production Dependencies:**
@@ -102,3 +105,34 @@ This document describes the interactions and roles of the AI agents involved in 
    * Codex supports technical documentation generation within codebases.
 
 This structured collaboration between Codex, VSCode, and Claude ensures an efficient, intelligent, and streamlined development process for ContextFlow, effectively aligning technical implementation with strategic user experience and market considerations.
+
+## Context Requirements
+
+### **MainGoal.md Context Mandate**
+
+All agents (Codex, VSCode, and Claude) must maintain constant awareness of `MainGoal.md` content, which includes:
+
+**Product Vision:**
+- ContextFlow: Intelligent Context-Aware Note-Taking Platform
+- Target Market: Knowledge workers, students, researchers, lifelong learners
+- Core Value Proposition: Dynamic, contextual webs of knowledge
+
+**Key Features to Implement:**
+- Dynamic Split-Screen Interface with adaptive layouts
+- Smart Content Linking with multi-reference highlighting
+- Intelligent Context Engine with AI-powered suggestions
+- Knowledge Graph Visualization
+- Advanced Note Organization with flexible hierarchies
+
+**Technical Architecture:**
+- Frontend: React with TypeScript, Progressive Web App
+- Backend: Node.js with GraphQL, PostgreSQL + Neo4j
+- AI/ML: OpenAI API integration for content analysis
+- Security: End-to-end encryption, GDPR compliance
+
+**Business Context:**
+- Freemium model ($9.99/month Personal Pro, $19.99/user Team)
+- Target metrics: 60% DAU, 15% conversion rate, $300+ LTV
+- Competition: Differentiation from Notion, Obsidian, Roam Research
+
+This context ensures all development work aligns with ContextFlow's strategic objectives and user needs.
