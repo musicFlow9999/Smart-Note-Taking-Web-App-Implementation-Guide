@@ -124,8 +124,8 @@ async function testErrorHandling() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: 'No Content' })
     })
-    // Should still work with partial data
-    assert.strictEqual(res.status, 201)
+    // Should be rejected when content is missing
+    assert.strictEqual(res.status, 400)
 
     // Test update non-existent document
     res = await makeRequest(server, '/api/documents/999', {
