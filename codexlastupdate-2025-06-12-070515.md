@@ -1,8 +1,8 @@
 # Codex Last Update - Smart Note-Taking Web App
 
 **Last Updated:** June 12, 2025 07:05 UTC
-**Version:** 1.3.0  
-**Status:** Local Development Ready ✅ | Azure Deployment Configured 🔧
+**Version:** 1.2.0  
+**Status:** Production Ready ✅
 
 ## 🚀 Latest Major Updates
 
@@ -59,54 +59,6 @@ to ensure logout properly revokes refresh tokens.
      throw error
    }
    ```
-
-### **Azure Deployment Infrastructure Configured (Latest Commit: aba7b7c)**
-
-Completed comprehensive Azure deployment investigation and configuration. The application is now ready for Azure App Service deployment.
-
-#### **Key Infrastructure Changes:**
-
-1. **Azure App Service Configuration**
-   ```bash
-   # Enabled comprehensive logging
-   az webapp log config --application-logging filesystem --web-server-logging filesystem 
-   --detailed-error-messages true --failed-request-tracing true --level information
-   
-   # Fixed startup command
-   az webapp config set --startup-file "npm start"
-   ```
-
-2. **Added web.config for IIS Integration**
-   ```xml
-   <!-- backend/web.config -->
-   <handlers>
-     <add name="iisnode" path="src/server.js" verb="*" modules="iisnode"/>
-   </handlers>
-   <rewrite>
-     <rules>
-       <rule name="DynamicContent">
-         <action type="Rewrite" url="src/server.js"/>
-       </rule>
-     </rules>
-   </rewrite>
-   ```
-
-3. **Environment Configuration Verified**
-   - Server correctly uses `process.env.PORT || 5000` (Azure sets PORT=8080)
-   - Node.js 20-lts runtime confirmed operational
-   - npm start command working correctly in Azure environment
-
-#### **Current Status:**
-- ✅ **Local Development:** Fully operational on http://localhost:5000
-- ✅ **Azure Infrastructure:** Configured and ready
-- 🔧 **Azure Deployment:** Requires GitHub Actions trigger to complete deployment
-- ✅ **Server Runtime:** Confirmed operational on Azure (port 8080)
-
-#### **Next Steps for Codex:**
-1. **Immediate:** Local development environment is fully ready for feature development
-2. **Azure Deployment:** Trigger GitHub Actions workflow to complete Azure deployment
-3. **Testing:** Verify `/api/health` endpoint on live Azure instance post-deployment
-4. **Development:** Continue with ContextFlow features using operational local environment
 
 ### **Test Infrastructure Improvements**
 
