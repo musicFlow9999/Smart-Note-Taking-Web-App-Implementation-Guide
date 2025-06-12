@@ -298,3 +298,15 @@ DATA_FILE=./data.json npm start # Use JSON file storage
 ---
 
 *This document serves as the authoritative reference for the current state of the Smart Note-Taking Web App codebase. Update this file whenever significant changes are made to the system.*
+
+## Next Steps
+
+**For Claude**
+- Troubleshoot npm ignoring the backend directory when locating `package.json`.
+- Confirm environment variables and `.env` paths are correctly set in the development environment.
+- Ensure `claudes4lastupdate.md` documents any new findings or issues.
+
+**For Code**
+- Investigate npm start script configuration to ensure it runs from the backend directory.
+- Add tests to reproduce the working directory mismatch if possible.
+- Update documentation with a clear setup guide once resolved.
