@@ -13,13 +13,14 @@ function jsonResponse(res, statusCode, data) {
 }
 
 export function createApp() {
-  return http.createServer((req, res) => {
+  return http.createServer(async (req, res) => {
     const idMatch = req.url.match(/^\/api\/documents\/(\w+)$/)
 
     if (req.method === 'GET' && req.url === '/api/documents') {
-      jsonResponse(res, 200, { documents: getAllDocuments() })
+      const docs = await getAllDocuments()
+      jsonResponse(res, 200, { documents: docs })
     } else if (req.method === 'GET' && idMatch) {
-      const doc = getDocumentById(idMatch[1])
+      const doc = await getDocumentById(idMatch[1])
       if (doc) {
         jsonResponse(res, 200, doc)
       } else {
@@ -30,10 +31,10 @@ export function createApp() {
       req.on('data', chunk => {
         body += chunk
       })
-      req.on('end', () => {
+      req.on('end', async () => {
         try {
           const { title, content } = JSON.parse(body)
-          const doc = createDocument({ title, content })
+          const doc = await createDocument({ title, content })
           jsonResponse(res, 201, doc)
         } catch (err) {
           jsonResponse(res, 400, { error: 'Invalid JSON' })
@@ -42,10 +43,10 @@ export function createApp() {
     } else if ((req.method === 'PUT' || req.method === 'PATCH') && idMatch) {
       let body = ''
       req.on('data', c => { body += c })
-      req.on('end', () => {
+      req.on('end', async () => {
         try {
           const data = JSON.parse(body)
-          const updated = updateDocument(idMatch[1], data)
+          const updated = await updateDocument(idMatch[1], data)
           if (updated) {
             jsonResponse(res, 200, updated)
           } else {
@@ -56,7 +57,7 @@ export function createApp() {
         }
       })
     } else if (req.method === 'DELETE' && idMatch) {
-      const ok = deleteDocument(idMatch[1])
+      const ok = await deleteDocument(idMatch[1])
       if (ok) {
         jsonResponse(res, 204, null)
       } else {
