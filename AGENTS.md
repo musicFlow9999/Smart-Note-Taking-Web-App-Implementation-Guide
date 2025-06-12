@@ -48,7 +48,7 @@ This document describes the interactions and roles of the AI agents involved in 
     
     **Timestamp Format:** Use ISO format `YYYY-MM-DD-HHMMSS` (e.g., `codexlastupdate-2025-06-11-143022.md`)
     
-    **Purpose:** Provide a bidirectional record of updates so each agent stays aware of the other's latest changes. Codex uses `codexlastupdate.md` to advise Claude which dependencies must be present for accurate testing.
+    **Purpose:** Maintain a bidirectional record of updates and instructions so each agent knows what the other has changed. `codexlastupdate.md` lets Claude Sonnet track Codex's recent updates and read any instructions from Codex, including which dependencies must be installed or unignored for Codex's tests. `claudes4lastupdate.md` informs Codex of Claude Sonnet's latest updates and guidance.
 
     * **Repository Management:** Always ensure the following core dependencies are present in `backend/package.json` when pushing changes to the repository:
     
