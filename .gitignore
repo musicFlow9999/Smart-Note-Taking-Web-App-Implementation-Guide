@@ -3,8 +3,18 @@ backend.zip
 
 # Data files
 backend/documents.json
+backend/data.json
+backend/*.db
+
+# Exclude all JSON files except important ones
 *.json
+!package.json
+!package-lock.json
 !backend/.eslintrc.json
+!backend/.prettierrc.json
+!azure.json
+!.vscode/settings.json
+!.vscode/launch.json
 
 # Node modules
 node_modules/

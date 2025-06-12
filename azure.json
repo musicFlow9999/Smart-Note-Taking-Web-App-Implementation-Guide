@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "defaultProvider": "azure",
+  "resources": [
+    {
+      "directory": "./backend",
+      "project": "./backend",
+      "host": {
+        "azure": {
+          "resourceGroupName": "smart-notes-rg",
+          "subscriptionId": "${AZURE_SUBSCRIPTION_ID}",
+          "location": "East US"
+        }
+      }
+    }
+  ]
+}
