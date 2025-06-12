@@ -114,6 +114,16 @@ This document describes the interactions and roles of the AI agents involved in 
 
 This structured collaboration between Codex and Claude Sonnet ensures an efficient, intelligent, and streamlined development process for ContextFlow, effectively aligning technical implementation with strategic user experience and market considerations.
 
+## Environment Configuration Handoff
+
+Codex operates in a constrained environment without direct access to certain configuration tools or network resources. When environment setup or system-level configuration is required, Codex must instead outline the steps for the Claude Sonnet agent to carry out in a fully provisioned development environment. These task descriptions should include:
+
+* Specific commands to run with proper paths and arguments
+* Required environment variables or configuration files that must be created or modified
+* Any expected outputs or verifications so Claude can confirm successful completion
+
+By providing this handoff, Codex ensures development continues smoothly despite proximity or permission limitations.
+
 ## Context Requirements
 
 ### **MainGoal.md Context Mandate**
