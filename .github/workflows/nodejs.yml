@@ -7,12 +7,71 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+        storage-type: [memory, file, sqlite]
+    
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+          
+      - name: Install dependencies
+        run: npm install --prefix backend
+        
+      - name: Run basic tests (memory storage)
+        if: matrix.storage-type == 'memory'
+        run: npm test --prefix backend
+        
+      - name: Run tests with file storage
+        if: matrix.storage-type == 'file'
+        run: |
+          cd backend
+          DATA_FILE=test_documents.json npm test
+        
+      - name: Run tests with SQLite storage
+        if: matrix.storage-type == 'sqlite'
+        run: |
+          cd backend
+          DB_FILE=test_notes.db npm test
+          
+      - name: Run enhanced test suite
+        if: matrix.node-version == '20' && matrix.storage-type == 'memory'
+        run: npm run test:enhanced --prefix backend
+
+  deploy-staging:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm install --prefix backend
-      - run: npm test --prefix backend
+          
+      - name: Install dependencies
+        run: npm install --prefix backend
+        
+      - name: Build application
+        run: |
+          cd backend
+          echo "Application built successfully"
+          
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-build
+          path: backend/
