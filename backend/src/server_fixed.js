@@ -192,7 +192,8 @@ export function createApp() {
             doc.tags && doc.tags.includes(tag)
           )
         }
-          jsonResponse(res, 200, { documents: filteredDocs })
+        
+        jsonResponse(res, 200, { documents: filteredDocs })
         return
       }
 
@@ -201,53 +202,40 @@ export function createApp() {
         if (doc) {
           jsonResponse(res, 200, doc)
         } else {
-          jsonResponse(res, 404, { error: 'Not found' })        }
+          jsonResponse(res, 404, { error: 'Document not found' })
+        }
         return
       }
 
       if (req.method === 'POST' && pathname === '/api/documents') {
-        try {
-          const { title, content, tags } = await parseJsonBody(req)
-          
-          if (!title || !content) {
-            return jsonResponse(res, 400, { 
-              error: 'Title and content are required' 
-            })
-          }
-          
-          const doc = await createDocument({ 
-            title, 
-            content, 
-            tags: tags || [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+        const { title, content, tags } = await parseJsonBody(req)
+        
+        if (!title || !content) {
+          return jsonResponse(res, 400, { 
+            error: 'Title and content are required' 
           })
-          jsonResponse(res, 201, doc)
-        } catch (error) {
-          if (error.message === 'Invalid JSON') {
-            jsonResponse(res, 400, { error: 'Invalid JSON' })
-          } else {
-            throw error
-          }
         }
+        
+        const doc = await createDocument({ 
+          title, 
+          content, 
+          tags: tags || [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        })
+        jsonResponse(res, 201, doc)
         return
-      }      if ((req.method === 'PUT' || req.method === 'PATCH') && idMatch) {
-        try {
-          const data = await parseJsonBody(req)
-          data.updatedAt = new Date().toISOString()
-          
-          const updated = await updateDocument(idMatch[1], data)
-          if (updated) {
-            jsonResponse(res, 200, updated)
-          } else {
-            jsonResponse(res, 404, { error: 'Not found' })
-          }
-        } catch (error) {
-          if (error.message === 'Invalid JSON') {
-            jsonResponse(res, 400, { error: 'Invalid JSON' })
-          } else {
-            throw error
-          }
+      }
+
+      if ((req.method === 'PUT' || req.method === 'PATCH') && idMatch) {
+        const data = await parseJsonBody(req)
+        data.updatedAt = new Date().toISOString()
+        
+        const updated = await updateDocument(idMatch[1], data)
+        if (updated) {
+          jsonResponse(res, 200, updated)
+        } else {
+          jsonResponse(res, 404, { error: 'Document not found' })
         }
         return
       }
@@ -257,7 +245,7 @@ export function createApp() {
         if (ok) {
           jsonResponse(res, 204, null)
         } else {
-          jsonResponse(res, 404, { error: 'Not found' })
+          jsonResponse(res, 404, { error: 'Document not found' })
         }
         return
       }
