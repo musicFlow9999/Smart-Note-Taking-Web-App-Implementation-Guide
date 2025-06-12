@@ -242,8 +242,23 @@ async function testAuthSystem() {
     }
     console.log()
 
-    // Test 10: Health Check
-    console.log('📝 Test 10: Health Check')
+    // Test 10: Refresh after logout (should fail)
+    console.log('📝 Test 10: Refresh After Logout (Should Fail)')
+    const refreshAfterLogout = await makeRequest('/api/auth/refresh', {
+      method: 'POST',
+      body: { refreshToken },
+    })
+
+    console.log(`Status: ${refreshAfterLogout.status}`)
+    if (refreshAfterLogout.status === 401) {
+      console.log('✅ Refresh token properly rejected after logout')
+    } else {
+      console.log('❌ Refresh token should not work after logout')
+    }
+    console.log()
+
+    // Test 11: Health Check
+    console.log('📝 Test 11: Health Check')
     const healthResponse = await makeRequest('/api/health')
 
     console.log(`Status: ${healthResponse.status}`)

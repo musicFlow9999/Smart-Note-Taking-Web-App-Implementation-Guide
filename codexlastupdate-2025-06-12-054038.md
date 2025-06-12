@@ -1,6 +1,6 @@
 # Codex Last Update - Smart Note-Taking Web App
 
-**Last Updated:** June 12, 2025 05:40 UTC
+**Last Updated:** June 12, 2025  
 **Version:** 1.2.0  
 **Status:** Production Ready ✅
 
@@ -126,7 +126,6 @@ All test suites pass successfully:
 - ✅ Token generation and validation
 - ✅ Refresh token functionality
 - ✅ Session management
-- ✅ Refresh token revoked after logout
 
 ## 🏗️ Current Architecture
 
@@ -306,9 +305,8 @@ DATA_FILE=./data.json npm start # Use JSON file storage
 - Troubleshoot npm ignoring the backend directory when locating `package.json`.
 - Confirm environment variables and `.env` paths are correctly set in the development environment.
 - Ensure `claudes4lastupdate.md` documents any new findings or issues.
-- Run the full test suite including new logout token test.
 
 **For Code**
-- Integrate the new refresh-after-logout test into the CI workflow.
 - Investigate npm start script configuration to ensure it runs from the backend directory.
+- Add tests to reproduce the working directory mismatch if possible.
 - Update documentation with a clear setup guide once resolved.
