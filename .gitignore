@@ -4,6 +4,7 @@ backend.zip
 # Data files
 backend/documents.json
 *.json
+!backend/.eslintrc.json
 
 # Node modules
 node_modules/
