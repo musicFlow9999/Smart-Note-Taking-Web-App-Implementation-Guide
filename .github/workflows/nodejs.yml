@@ -48,6 +48,10 @@ jobs:
         if: matrix.node-version == '20' && matrix.storage-type == 'memory'
         run: npm run test:enhanced --prefix backend
 
+      - name: Run authentication tests
+        if: matrix.node-version == '20' && matrix.storage-type == 'memory'
+        run: npm run test:auth --prefix backend
+
   deploy-staging:
     needs: test
     runs-on: ubuntu-latest

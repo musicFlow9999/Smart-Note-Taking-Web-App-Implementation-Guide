@@ -1,10 +1,14 @@
 # Codex Last Update - Smart Note-Taking Web App
 
-**Last Updated:** June 12, 2025  
+**Last Updated:** June 12, 2025 05:57 UTC
 **Version:** 1.2.0  
 **Status:** Production Ready ✅
 
 ## 🚀 Latest Major Updates
+
+### **Frontend Interface Added (Latest Commit: 085bb40)**
+
+An interactive HTML/JS client is now provided at `frontend/index.html`.
 
 ### **Critical SQL.js Implementation Fixes (Latest Commit: c1e1654)**
 
@@ -26,15 +30,21 @@ Fixed fundamental SQL.js API compatibility issues that were preventing proper da
    const stmt = db.prepare('SELECT last_insert_rowid() as id')
    stmt.step()
    const result = stmt.getAsObject()
-   const id = String(result.id)
-   stmt.free()
+  const id = String(result.id)
+  stmt.free()
    ```
 
 2. **All CRUD Operations Updated**
    - **Create**: Uses `db.run()` + `last_insert_rowid()` for ID generation
    - **Update**: Direct `db.run()` calls instead of prepared statement pattern
-   - **Delete**: Check existence first, then delete with proper error handling
-   - **User Management**: Fixed all authentication-related database operations
+  - **Delete**: Check existence first, then delete with proper error handling
+  - **User Management**: Fixed all authentication-related database operations
+
+### **CI Workflow Updates (Latest Commit: 76f94ad)**
+
+Authentication tests are now part of the GitHub Actions
+pipeline. The workflow runs `npm run test:auth` on Node.js 20
+to ensure logout properly revokes refresh tokens.
 
 3. **Enhanced Error Handling**
    ```javascript
@@ -77,9 +87,14 @@ Fixed fundamental SQL.js API compatibility issues that were preventing proper da
      } else {
        delete process.env.DB_FILE
      }
-     fs.unlinkSync(testDbPath)
-   }
-   ```
+   fs.unlinkSync(testDbPath)
+  }
+  ```
+
+3. **CI Authentication Tests**
+   - GitHub Actions workflow now runs `npm run test:auth`
+     on Node.js 20 with in-memory storage to verify
+     refresh tokens are invalidated after logout.
 
 ### **Code Quality Enhancements**
 
@@ -122,6 +137,7 @@ All test suites pass successfully:
 - ✅ Token generation and validation
 - ✅ Refresh token functionality
 - ✅ Session management
+- ✅ Refresh token revoked after logout
 
 ## 🏗️ Current Architecture
 
@@ -277,7 +293,7 @@ DATA_FILE=./data.json npm start # Use JSON file storage
 
 ## 🔄 Git Status
 
-- **Latest Commit:** `c1e1654` - "Fix sql.js implementation and improve test isolation"
+- **Latest Commit:** `76f94ad` - "CI workflow runs auth tests"
 - **Branch:** `main`
 - **Remote Status:** Up to date with origin/main
 - **Working Tree:** Clean (no pending changes)
@@ -294,3 +310,15 @@ DATA_FILE=./data.json npm start # Use JSON file storage
 ---
 
 *This document serves as the authoritative reference for the current state of the Smart Note-Taking Web App codebase. Update this file whenever significant changes are made to the system.*
+
+## Next Steps
+
+**For Claude**
+- Troubleshoot npm ignoring the backend directory when locating `package.json`.
+- Confirm environment variables and `.env` paths are correctly set in the development environment.
+- Ensure `claudes4lastupdate.md` documents any new findings or issues.
+- Run the full test suite including new logout token test.
+
+**For Code**
+- Investigate npm start script configuration to ensure it runs from the backend directory.
+- Update documentation with a clear setup guide once resolved.
