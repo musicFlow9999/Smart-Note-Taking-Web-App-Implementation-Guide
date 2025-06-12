@@ -8,8 +8,8 @@
     "test:enhanced": "node test/enhanced.test.js",
     "test:auth": "node test/auth.test.js",
     "test:all": "npm test && npm run test:enhanced && npm run test:auth",
-    "lint": "eslint src/ test/",
-    "lint:fix": "eslint src/ test/ --fix",
+    "lint": "ESLINT_USE_FLAT_CONFIG=false eslint -c .eslintrc.json src/ test/",
+    "lint:fix": "ESLINT_USE_FLAT_CONFIG=false eslint -c .eslintrc.json src/ test/ --fix",
     "format": "prettier --write src/ test/"
   },
   "dependencies": {
