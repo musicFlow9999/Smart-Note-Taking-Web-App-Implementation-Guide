@@ -7,14 +7,31 @@ async function run() {
   await once(server, 'listening')
   const { port } = server.address()
 
-  let res = await fetch(`http://localhost:${port}/api/documents`)
+  // Register and login to obtain token
+  let res = await fetch(`http://localhost:${port}/api/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: 'basicuser',
+      email: 'basic@example.com',
+      password: 'pass1234',
+    }),
+  })
+
+  assert.strictEqual(res.status, 201)
+  let authData = await res.json()
+  const token = authData.accessToken
+
+  res = await fetch(`http://localhost:${port}/api/documents`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
   assert.strictEqual(res.status, 200)
   let data = await res.json()
   assert.deepStrictEqual(data.documents, [])
 
   res = await fetch(`http://localhost:${port}/api/documents`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ title: 'Test', content: 'Hello' }),
   })
   assert.strictEqual(res.status, 201)
@@ -23,14 +40,16 @@ async function run() {
 
   const id = doc.id
 
-  res = await fetch(`http://localhost:${port}/api/documents/${id}`)
+  res = await fetch(`http://localhost:${port}/api/documents/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
   assert.strictEqual(res.status, 200)
   const single = await res.json()
   assert.strictEqual(single.id, id)
 
   res = await fetch(`http://localhost:${port}/api/documents/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ title: 'Updated' }),
   })
   assert.strictEqual(res.status, 200)
@@ -39,13 +58,18 @@ async function run() {
 
   res = await fetch(`http://localhost:${port}/api/documents/${id}`, {
     method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
   })
   assert.strictEqual(res.status, 204)
 
-  res = await fetch(`http://localhost:${port}/api/documents/${id}`)
+  res = await fetch(`http://localhost:${port}/api/documents/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
   assert.strictEqual(res.status, 404)
 
-  res = await fetch(`http://localhost:${port}/api/documents`)
+  res = await fetch(`http://localhost:${port}/api/documents`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
   const data2 = await res.json()
   assert.strictEqual(data2.documents.length, 0)
 

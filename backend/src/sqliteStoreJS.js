@@ -32,6 +32,16 @@ export async function init(path) {
     user_id TEXT
   )`)
 
+  db.run(`CREATE TABLE IF NOT EXISTS document_versions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    document_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    tags TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    user_id TEXT
+  )`)
+
   db.run(`CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     username TEXT UNIQUE NOT NULL,
@@ -180,6 +190,17 @@ export function updateDocument(id, data) {
   const current = getDocumentById(id)
   if (!current) return null
 
+  // Store current version
+  try {
+    db.run(
+      `INSERT INTO document_versions (document_id, title, content, tags, user_id)
+       VALUES (?, ?, ?, ?, ?)`,
+      [id, current.title, current.content, JSON.stringify(current.tags), current.userId]
+    )
+  } catch (error) {
+    logger.error('Failed to store document version', { error: error.message })
+  }
+
   const updates = []
   const values = []
 
@@ -227,6 +248,20 @@ export function deleteDocument(id) {
 
     if (!exists) {
       return false
+    }
+
+    // Store current version before deletion
+    const current = getDocumentById(id)
+    if (current) {
+      try {
+        db.run(
+          `INSERT INTO document_versions (document_id, title, content, tags, user_id)
+           VALUES (?, ?, ?, ?, ?)`,
+          [id, current.title, current.content, JSON.stringify(current.tags), current.userId]
+        )
+      } catch (error) {
+        logger.error('Failed to store document version', { error: error.message })
+      }
     }
 
     // Delete the document
@@ -344,5 +379,32 @@ export function deleteRefreshToken(token) {
   } catch (error) {
     logger.error('Failed to delete refresh token', { error: error.message })
     return false
+  }
+}
+
+export function getDocumentVersions(documentId) {
+  const stmt = db.prepare(`
+    SELECT id, document_id, title, content, tags, created_at, user_id
+    FROM document_versions WHERE document_id = ? ORDER BY id DESC
+  `)
+
+  const versions = []
+  try {
+    stmt.bind([parseInt(documentId)])
+    while (stmt.step()) {
+      const row = stmt.getAsObject()
+      versions.push({
+        id: String(row.id),
+        documentId: String(row.document_id),
+        title: row.title,
+        content: row.content,
+        tags: JSON.parse(row.tags || '[]'),
+        createdAt: row.created_at,
+        userId: row.user_id,
+      })
+    }
+    return versions
+  } finally {
+    stmt.free()
   }
 }

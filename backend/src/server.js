@@ -7,6 +7,7 @@ import {
   getDocumentById,
   updateDocument,
   deleteDocument,
+  getDocumentVersions,
 } from './store.js'
 import {
   createUser,
@@ -171,23 +172,39 @@ export function createApp() {
         return
       }
 
-      // Document endpoints - now with authentication
+      // Document endpoints with authentication
       const idMatch = pathname.match(/^\/api\/documents\/(\w+)$/)
+      const authHeader = req.headers.authorization
+      const user = authHeader && authHeader.startsWith('Bearer ')
+        ? verifyToken(authHeader.substring(7))
+        : null
+
+      if (!user) {
+        return jsonResponse(res, 401, { error: 'Unauthorized' })
+      }
 
       if (req.method === 'GET' && pathname === '/api/documents') {
-        // For now, make documents public, but you can add auth here
-        const docs = await getAllDocuments()
+        const docs = await getAllDocuments(user.id)
         const searchTerm = query.search
         const tag = query.tag
 
         let filteredDocs = docs
 
         if (searchTerm) {
-          filteredDocs = docs.filter(
-            doc =>
-              doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              doc.content.toLowerCase().includes(searchTerm.toLowerCase())
-          )
+          const term = searchTerm.toLowerCase()
+          filteredDocs = docs
+            .filter(
+              doc =>
+                doc.title.toLowerCase().includes(term) ||
+                doc.content.toLowerCase().includes(term)
+            )
+            .map(doc => {
+              let rank = 0
+              if (doc.title.toLowerCase().includes(term)) rank += 2
+              if (doc.content.toLowerCase().includes(term)) rank += 1
+              return { ...doc, _rank: rank }
+            })
+            .sort((a, b) => b._rank - a._rank)
         }
 
         if (tag) {
@@ -202,7 +219,7 @@ export function createApp() {
 
       if (req.method === 'GET' && idMatch) {
         const doc = await getDocumentById(idMatch[1])
-        if (doc) {
+        if (doc && doc.userId === user.id) {
           jsonResponse(res, 200, doc)
         } else {
           jsonResponse(res, 404, { error: 'Not found' })
@@ -224,6 +241,7 @@ export function createApp() {
             title,
             content,
             tags: tags || [],
+            userId: user.id,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           })
@@ -243,12 +261,13 @@ export function createApp() {
           const data = await parseJsonBody(req)
           data.updatedAt = new Date().toISOString()
 
-          const updated = await updateDocument(idMatch[1], data)
-          if (updated) {
-            jsonResponse(res, 200, updated)
-          } else {
-            jsonResponse(res, 404, { error: 'Not found' })
+          const existing = await getDocumentById(idMatch[1])
+          if (!existing || existing.userId !== user.id) {
+            return jsonResponse(res, 404, { error: 'Not found' })
           }
+
+          const updated = await updateDocument(idMatch[1], data)
+          jsonResponse(res, 200, updated)
         } catch (error) {
           if (error.message === 'Invalid JSON') {
             jsonResponse(res, 400, { error: 'Invalid JSON' })
@@ -260,12 +279,28 @@ export function createApp() {
       }
 
       if (req.method === 'DELETE' && idMatch) {
+        const existing = await getDocumentById(idMatch[1])
+        if (!existing || existing.userId !== user.id) {
+          return jsonResponse(res, 404, { error: 'Not found' })
+        }
+
         const ok = await deleteDocument(idMatch[1])
         if (ok) {
           jsonResponse(res, 204, null)
         } else {
           jsonResponse(res, 404, { error: 'Not found' })
         }
+        return
+      }
+
+      if (req.method === 'GET' && pathname.match(/^\/api\/documents\/\w+\/versions$/)) {
+        const docId = pathname.split('/')[3]
+        const existing = await getDocumentById(docId)
+        if (!existing || existing.userId !== user.id) {
+          return jsonResponse(res, 404, { error: 'Not found' })
+        }
+        const versions = await getDocumentVersions(docId)
+        jsonResponse(res, 200, { versions })
         return
       }
 

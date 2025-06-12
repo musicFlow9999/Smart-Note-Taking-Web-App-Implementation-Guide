@@ -5,11 +5,32 @@ import fs from 'fs'
 import path from 'path'
 import { resetStore } from '../src/store.js'
 
+let token = null
+
+async function auth(server) {
+  const res = await makeRequest(server, '/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: 'user' + Date.now(),
+      email: `u${Date.now()}@example.com`,
+      password: 'pass1234',
+    }),
+  })
+  const data = await res.json()
+  token = data.accessToken
+}
+
 // Test utilities
 async function makeRequest(server, endpoint, options = {}) {
   const { port } = server.address()
   const url = `http://localhost:${port}${endpoint}`
-  return await fetch(url, options)
+  const opts = { ...options }
+  opts.headers = {
+    ...(options.headers || {}),
+    Authorization: `Bearer ${token}`,
+  }
+  return await fetch(url, opts)
 }
 
 async function createTestDocument(
@@ -48,6 +69,14 @@ async function testBasicCRUD() {
 
   const server = createApp().listen(0)
   await once(server, 'listening')
+
+  await auth(server)
+
+  await auth(server)
+
+  await auth(server)
+
+  await auth(server)
 
   try {
     // Test GET empty list
@@ -241,6 +270,8 @@ async function testDataPersistence() {
     const server1 = createApp().listen(0)
     await once(server1, 'listening')
 
+    await auth(server1)
+
     // Create a document
     await createTestDocument(server1, 'Persistent Doc', 'This should persist')
 
@@ -255,6 +286,8 @@ async function testDataPersistence() {
     // Start second server instance (simulating restart)
     const server2 = createApp().listen(0)
     await once(server2, 'listening')
+
+    await auth(server2)
 
     // Check if data persisted
     res = await makeRequest(server2, '/api/documents')

@@ -50,3 +50,8 @@ export const deleteDocument = async (...args) => {
   await initializeStore()
   return store.deleteDocument(...args)
 }
+
+export const getDocumentVersions = async (...args) => {
+  await initializeStore()
+  return store.getDocumentVersions ? store.getDocumentVersions(...args) : []
+}
