@@ -155,8 +155,7 @@ export function validateSession(sessionId) {
   return decoded ? { userId: decoded.id } : null
 }
 
-export function destroySession(_sessionId) {
-  // eslint-disable-line no-unused-vars
+export function destroySession(_sessionId) { // eslint-disable-line no-unused-vars
   // For JWT tokens, we can't really "destroy" them without a blacklist
   // In production, you'd implement a token blacklist
   return true
