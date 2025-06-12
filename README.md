@@ -25,12 +25,19 @@ memory. The server is intended as a starting point for further development.
 
    The API will be available at `http://localhost:5000` by default.
    Set the `DATA_FILE` environment variable to persist documents to a JSON file.
+   Alternatively, provide a `DB_FILE` path to use a SQLite database.
 
 3. Run the test suite:
 
-   ```bash
-   npm test
-   ```
+  ```bash
+  npm test
+  ```
+
+### Database Configuration
+
+To store notes in SQLite instead of memory, set the `DB_FILE` environment
+variable to the path of a `.db` file before starting the server. The database
+and required table will be created automatically if they do not exist.
 
 ## API Endpoints
 
@@ -47,7 +54,9 @@ Set a `DATA_FILE` path to persist them across sessions, or consider using a data
 
 The following improvements are recommended but not yet implemented:
 
-- Use a database (e.g. SQLite, MongoDB) instead of the in-memory array.
+<!-- Database integration implemented -->
+- Database integration via SQLite is now available. Set `DB_FILE` to a path
+  to use a SQLite database instead of the in-memory array.
 - Create a frontend interface to interact with the API.
 - Expand tests to cover edge cases and database logic once added.
 - Continuous integration is configured with GitHub Actions to run tests automatically.
