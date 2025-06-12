@@ -9,7 +9,7 @@ let dbPath
 export async function init(path) {
   dbPath = path
   SQL = await initSqlJs()
-  
+
   // Try to load existing database
   try {
     const data = fs.readFileSync(dbPath)
@@ -20,7 +20,7 @@ export async function init(path) {
     db = new SQL.Database()
     logger.info('New database created', { path })
   }
-  
+
   // Create tables if they don't exist
   db.run(`CREATE TABLE IF NOT EXISTS documents (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -48,12 +48,18 @@ export async function init(path) {
     expires_at DATETIME NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id)
   )`)
-  
+
   // Create indexes for better performance
-  db.run(`CREATE INDEX IF NOT EXISTS idx_documents_user_id ON documents(user_id)`)
-  db.run(`CREATE INDEX IF NOT EXISTS idx_documents_created_at ON documents(created_at)`)
-  db.run(`CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id)`)
-  
+  db.run(
+    `CREATE INDEX IF NOT EXISTS idx_documents_user_id ON documents(user_id)`
+  )
+  db.run(
+    `CREATE INDEX IF NOT EXISTS idx_documents_created_at ON documents(created_at)`
+  )
+  db.run(
+    `CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id)`
+  )
+
   // Save to file
   saveDatabase()
 }
@@ -64,28 +70,32 @@ function saveDatabase() {
     const data = db.export()
     fs.writeFileSync(dbPath, data)
   } catch (error) {
-    logger.error('Failed to save database', { error: error.message, path: dbPath })
+    logger.error('Failed to save database', {
+      error: error.message,
+      path: dbPath,
+    })
   }
 }
 
 export function getAllDocuments(userId = null) {
-  let query = 'SELECT id, title, content, tags, created_at, updated_at, user_id FROM documents'
+  let query =
+    'SELECT id, title, content, tags, created_at, updated_at, user_id FROM documents'
   let params = []
-  
+
   if (userId) {
     query += ' WHERE user_id = ? OR user_id IS NULL'
     params = [userId]
   }
-  
+
   query += ' ORDER BY updated_at DESC'
-  
+
   const stmt = db.prepare(query)
   const results = []
-  
+
   if (params.length > 0) {
     stmt.bind(params)
   }
-  
+
   while (stmt.step()) {
     const row = stmt.getAsObject()
     results.push({
@@ -95,7 +105,7 @@ export function getAllDocuments(userId = null) {
       tags: JSON.parse(row.tags || '[]'),
       createdAt: row.created_at,
       updatedAt: row.updated_at,
-      userId: row.user_id
+      userId: row.user_id,
     })
   }
   stmt.free()
@@ -106,12 +116,12 @@ export function createDocument(data) {
   const { title, content, tags = [], userId = null } = data
   const tagsJson = JSON.stringify(tags)
   const now = new Date().toISOString()
-  
+
   const stmt = db.prepare(`
     INSERT INTO documents (title, content, tags, created_at, updated_at, user_id) 
     VALUES (?, ?, ?, ?, ?, ?)
   `)
-  
+
   try {
     const info = stmt.run([title, content, tagsJson, now, now, userId])
     const newDoc = {
@@ -121,7 +131,7 @@ export function createDocument(data) {
       tags,
       createdAt: now,
       updatedAt: now,
-      userId
+      userId,
     }
     saveDatabase()
     logger.info('Document created', { id: newDoc.id, title, userId })
@@ -136,7 +146,7 @@ export function getDocumentById(id) {
     SELECT id, title, content, tags, created_at, updated_at, user_id 
     FROM documents WHERE id = ?
   `)
-  
+
   try {
     stmt.bind([parseInt(id)])
     if (stmt.step()) {
@@ -148,7 +158,7 @@ export function getDocumentById(id) {
         tags: JSON.parse(row.tags || '[]'),
         createdAt: row.created_at,
         updatedAt: row.updated_at,
-        userId: row.user_id
+        userId: row.user_id,
       }
     }
     return null
@@ -160,10 +170,10 @@ export function getDocumentById(id) {
 export function updateDocument(id, data) {
   const current = getDocumentById(id)
   if (!current) return null
-  
+
   const updates = []
   const values = []
-  
+
   if (data.title !== undefined) {
     updates.push('title = ?')
     values.push(data.title)
@@ -176,15 +186,15 @@ export function updateDocument(id, data) {
     updates.push('tags = ?')
     values.push(JSON.stringify(data.tags))
   }
-  
+
   updates.push('updated_at = ?')
   values.push(new Date().toISOString())
   values.push(parseInt(id))
-  
+
   const stmt = db.prepare(`
     UPDATE documents SET ${updates.join(', ')} WHERE id = ?
   `)
-  
+
   try {
     stmt.run(values)
     saveDatabase()
@@ -198,7 +208,7 @@ export function updateDocument(id, data) {
 
 export function deleteDocument(id) {
   const stmt = db.prepare('DELETE FROM documents WHERE id = ?')
-  
+
   try {
     const info = stmt.run([parseInt(id)])
     saveDatabase()
@@ -219,7 +229,7 @@ export function createUser(userData) {
     INSERT INTO users (id, username, email, password_hash, password_salt) 
     VALUES (?, ?, ?, ?, ?)
   `)
-  
+
   try {
     stmt.run([id, username, email, passwordHash, passwordSalt])
     saveDatabase()
@@ -235,7 +245,7 @@ export function getUserByUsername(username) {
     SELECT id, username, email, password_hash, password_salt, created_at 
     FROM users WHERE username = ?
   `)
-  
+
   try {
     stmt.bind([username])
     if (stmt.step()) {
@@ -246,7 +256,7 @@ export function getUserByUsername(username) {
         email: row.email,
         passwordHash: row.password_hash,
         passwordSalt: row.password_salt,
-        createdAt: row.created_at
+        createdAt: row.created_at,
       }
     }
     return null
@@ -260,7 +270,7 @@ export function storeRefreshToken(token, userId, expiresAt) {
     INSERT INTO refresh_tokens (token, user_id, expires_at) 
     VALUES (?, ?, ?)
   `)
-  
+
   try {
     stmt.run([token, userId, expiresAt])
     saveDatabase()
@@ -274,7 +284,7 @@ export function getRefreshToken(token) {
     SELECT token, user_id, created_at, expires_at 
     FROM refresh_tokens WHERE token = ?
   `)
-  
+
   try {
     stmt.bind([token])
     if (stmt.step()) {
@@ -283,7 +293,7 @@ export function getRefreshToken(token) {
         token: row.token,
         userId: row.user_id,
         createdAt: row.created_at,
-        expiresAt: row.expires_at
+        expiresAt: row.expires_at,
       }
     }
     return null
@@ -294,7 +304,7 @@ export function getRefreshToken(token) {
 
 export function deleteRefreshToken(token) {
   const stmt = db.prepare('DELETE FROM refresh_tokens WHERE token = ?')
-  
+
   try {
     const info = stmt.run([token])
     saveDatabase()

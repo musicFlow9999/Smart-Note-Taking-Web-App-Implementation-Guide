@@ -1,6 +1,11 @@
 import { createApp } from '../src/server.js'
 import http from 'http'
-import { createUser, authenticateUser, generateTokens, verifyToken } from '../src/auth.js'
+import {
+  createUser,
+  authenticateUser,
+  generateTokens,
+  verifyToken,
+} from '../src/auth.js'
 
 const PORT = 5001 // Different port for testing
 let server
@@ -14,17 +19,21 @@ async function makeRequest(path, options = {}) {
       method: options.method || 'GET',
       headers: {
         'Content-Type': 'application/json',
-        ...options.headers
-      }
+        ...options.headers,
+      },
     }
 
-    const req = http.request(reqOptions, (res) => {
+    const req = http.request(reqOptions, res => {
       let data = ''
-      res.on('data', chunk => data += chunk)
+      res.on('data', chunk => (data += chunk))
       res.on('end', () => {
         try {
           const parsed = data ? JSON.parse(data) : null
-          resolve({ status: res.statusCode, data: parsed, headers: res.headers })
+          resolve({
+            status: res.statusCode,
+            data: parsed,
+            headers: res.headers,
+          })
         } catch (e) {
           resolve({ status: res.statusCode, data, headers: res.headers })
         }
@@ -32,11 +41,11 @@ async function makeRequest(path, options = {}) {
     })
 
     req.on('error', reject)
-    
+
     if (options.body) {
       req.write(JSON.stringify(options.body))
     }
-    
+
     req.end()
   })
 }
@@ -57,15 +66,17 @@ async function testAuthSystem() {
       body: {
         username: 'testuser',
         email: 'test@example.com',
-        password: 'testpass123'
-      }
+        password: 'testpass123',
+      },
     })
-    
+
     console.log(`Status: ${registerResponse.status}`)
     if (registerResponse.status === 201) {
       console.log('✅ Registration successful')
       console.log(`User: ${registerResponse.data.user.username}`)
-      console.log(`Access Token: ${registerResponse.data.accessToken ? 'Present' : 'Missing'}`)
+      console.log(
+        `Access Token: ${registerResponse.data.accessToken ? 'Present' : 'Missing'}`
+      )
     } else {
       console.log('❌ Registration failed')
       console.log(registerResponse.data)
@@ -79,10 +90,10 @@ async function testAuthSystem() {
       body: {
         username: 'testuser',
         email: 'test2@example.com',
-        password: 'testpass123'
-      }
+        password: 'testpass123',
+      },
     })
-    
+
     console.log(`Status: ${duplicateResponse.status}`)
     if (duplicateResponse.status === 400) {
       console.log('✅ Duplicate registration properly rejected')
@@ -97,13 +108,13 @@ async function testAuthSystem() {
       method: 'POST',
       body: {
         username: 'testuser',
-        password: 'testpass123'
-      }
+        password: 'testpass123',
+      },
     })
-    
+
     let accessToken = null
     let refreshToken = null
-    
+
     console.log(`Status: ${loginResponse.status}`)
     if (loginResponse.status === 200) {
       console.log('✅ Login successful')
@@ -123,10 +134,10 @@ async function testAuthSystem() {
       method: 'POST',
       body: {
         username: 'testuser',
-        password: 'wrongpassword'
-      }
+        password: 'wrongpassword',
+      },
     })
-    
+
     console.log(`Status: ${invalidLoginResponse.status}`)
     if (invalidLoginResponse.status === 401) {
       console.log('✅ Invalid login properly rejected')
@@ -139,10 +150,10 @@ async function testAuthSystem() {
     console.log('📝 Test 5: Protected Route Access')
     const protectedResponse = await makeRequest('/api/auth/me', {
       headers: {
-        'Authorization': `Bearer ${accessToken}`
-      }
+        Authorization: `Bearer ${accessToken}`,
+      },
     })
-    
+
     console.log(`Status: ${protectedResponse.status}`)
     if (protectedResponse.status === 200) {
       console.log('✅ Protected route access successful')
@@ -158,14 +169,16 @@ async function testAuthSystem() {
     const refreshResponse = await makeRequest('/api/auth/refresh', {
       method: 'POST',
       body: {
-        refreshToken: refreshToken
-      }
+        refreshToken: refreshToken,
+      },
     })
-    
+
     console.log(`Status: ${refreshResponse.status}`)
     if (refreshResponse.status === 200) {
       console.log('✅ Token refresh successful')
-      console.log(`New Access Token: ${refreshResponse.data.accessToken ? 'Present' : 'Missing'}`)
+      console.log(
+        `New Access Token: ${refreshResponse.data.accessToken ? 'Present' : 'Missing'}`
+      )
     } else {
       console.log('❌ Token refresh failed')
       console.log(refreshResponse.data)
@@ -177,15 +190,15 @@ async function testAuthSystem() {
     const documentResponse = await makeRequest('/api/documents', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${accessToken}`
+        Authorization: `Bearer ${accessToken}`,
       },
       body: {
         title: 'Test Note',
         content: 'This is a test note created with authentication',
-        tags: ['test', 'auth']
-      }
+        tags: ['test', 'auth'],
+      },
     })
-    
+
     console.log(`Status: ${documentResponse.status}`)
     if (documentResponse.status === 201) {
       console.log('✅ Authenticated document creation successful')
@@ -199,8 +212,10 @@ async function testAuthSystem() {
 
     // Test 8: Search and Filter
     console.log('📝 Test 8: Search and Filter')
-    const searchResponse = await makeRequest('/api/documents?search=test&tag=auth')
-    
+    const searchResponse = await makeRequest(
+      '/api/documents?search=test&tag=auth'
+    )
+
     console.log(`Status: ${searchResponse.status}`)
     if (searchResponse.status === 200) {
       console.log('✅ Search and filter successful')
@@ -215,10 +230,10 @@ async function testAuthSystem() {
     const logoutResponse = await makeRequest('/api/auth/logout', {
       method: 'POST',
       body: {
-        refreshToken: refreshToken
-      }
+        refreshToken: refreshToken,
+      },
     })
-    
+
     console.log(`Status: ${logoutResponse.status}`)
     if (logoutResponse.status === 200) {
       console.log('✅ Logout successful')
@@ -230,7 +245,7 @@ async function testAuthSystem() {
     // Test 10: Health Check
     console.log('📝 Test 10: Health Check')
     const healthResponse = await makeRequest('/api/health')
-    
+
     console.log(`Status: ${healthResponse.status}`)
     if (healthResponse.status === 200) {
       console.log('✅ Health check successful')
@@ -241,7 +256,6 @@ async function testAuthSystem() {
     console.log()
 
     console.log('🎉 All authentication tests completed!')
-
   } catch (error) {
     console.error('❌ Test failed with error:', error.message)
     console.error(error.stack)
@@ -282,7 +296,6 @@ function testJWTFunctions() {
     console.log('Decoded user:', decoded.username)
 
     console.log('\n🎉 JWT function tests completed!\n')
-
   } catch (error) {
     console.error('❌ JWT test failed:', error.message)
   }
@@ -292,13 +305,13 @@ function testJWTFunctions() {
 async function runTests() {
   console.log('🚀 Starting Enhanced Smart Notes API Tests\n')
   console.log('=' * 50)
-  
+
   // Run JWT unit tests first
   testJWTFunctions()
-  
+
   // Run integration tests
   await testAuthSystem()
-  
+
   console.log('=' * 50)
   console.log('✨ All tests completed!')
 }

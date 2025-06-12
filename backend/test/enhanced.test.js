@@ -11,11 +11,15 @@ async function makeRequest(server, endpoint, options = {}) {
   return await fetch(url, options)
 }
 
-async function createTestDocument(server, title = 'Test Doc', content = 'Test Content') {
+async function createTestDocument(
+  server,
+  title = 'Test Doc',
+  content = 'Test Content'
+) {
   const res = await makeRequest(server, '/api/documents', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, content })
+    body: JSON.stringify({ title, content }),
   })
   return await res.json()
 }
@@ -23,7 +27,7 @@ async function createTestDocument(server, title = 'Test Doc', content = 'Test Co
 // Test suites
 async function testBasicCRUD() {
   console.log('🧪 Testing Basic CRUD Operations...')
-  
+
   const server = createApp().listen(0)
   await once(server, 'listening')
 
@@ -38,7 +42,7 @@ async function testBasicCRUD() {
     res = await makeRequest(server, '/api/documents', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: 'Test', content: 'Hello World' })
+      body: JSON.stringify({ title: 'Test', content: 'Hello World' }),
     })
     assert.strictEqual(res.status, 201)
     const doc = await res.json()
@@ -59,7 +63,10 @@ async function testBasicCRUD() {
     res = await makeRequest(server, `/api/documents/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: 'Updated Title', content: 'Updated Content' })
+      body: JSON.stringify({
+        title: 'Updated Title',
+        content: 'Updated Content',
+      }),
     })
     assert.strictEqual(res.status, 200)
     const updated = await res.json()
@@ -70,7 +77,7 @@ async function testBasicCRUD() {
     res = await makeRequest(server, `/api/documents/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: 'Patched Title' })
+      body: JSON.stringify({ title: 'Patched Title' }),
     })
     assert.strictEqual(res.status, 200)
     const patched = await res.json()
@@ -78,7 +85,9 @@ async function testBasicCRUD() {
     assert.strictEqual(patched.content, 'Updated Content') // Should preserve content
 
     // Test DELETE
-    res = await makeRequest(server, `/api/documents/${id}`, { method: 'DELETE' })
+    res = await makeRequest(server, `/api/documents/${id}`, {
+      method: 'DELETE',
+    })
     assert.strictEqual(res.status, 204)
 
     // Verify deletion
@@ -93,7 +102,7 @@ async function testBasicCRUD() {
 
 async function testErrorHandling() {
   console.log('🧪 Testing Error Handling...')
-  
+
   const server = createApp().listen(0)
   await once(server, 'listening')
 
@@ -108,7 +117,7 @@ async function testErrorHandling() {
     res = await makeRequest(server, '/api/documents', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: 'invalid json'
+      body: 'invalid json',
     })
     assert.strictEqual(res.status, 400)
     error = await res.json()
@@ -122,7 +131,7 @@ async function testErrorHandling() {
     res = await makeRequest(server, '/api/documents', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: 'No Content' })
+      body: JSON.stringify({ title: 'No Content' }),
     })
     // Should be rejected when content is missing
     assert.strictEqual(res.status, 400)
@@ -131,7 +140,7 @@ async function testErrorHandling() {
     res = await makeRequest(server, '/api/documents/999', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: 'Updated' })
+      body: JSON.stringify({ title: 'Updated' }),
     })
     assert.strictEqual(res.status, 404)
 
@@ -147,14 +156,15 @@ async function testErrorHandling() {
 
 async function testDataPersistence() {
   console.log('🧪 Testing Data Persistence...')
-  
+
   // Test with temporary database file
   const testDbPath = path.join(process.cwd(), 'test.db')
-  
   // Clean up any existing test file
   try {
     fs.unlinkSync(testDbPath)
-  } catch {}
+  } catch {
+    // Ignore if file doesn't exist
+  }
 
   // Set environment variable for test database
   const originalDbFile = process.env.DB_FILE
@@ -167,7 +177,7 @@ async function testDataPersistence() {
 
     // Create a document
     await createTestDocument(server1, 'Persistent Doc', 'This should persist')
-    
+
     // Get all documents
     let res = await makeRequest(server1, '/api/documents')
     let data = await res.json()
@@ -196,17 +206,18 @@ async function testDataPersistence() {
     } else {
       delete process.env.DB_FILE
     }
-    
     // Clean up test file
     try {
       fs.unlinkSync(testDbPath)
-    } catch {}
+    } catch {
+      // Ignore if file doesn't exist
+    }
   }
 }
 
 async function testConcurrency() {
   console.log('🧪 Testing Concurrent Operations...')
-  
+
   const server = createApp().listen(0)
   await once(server, 'listening')
 
@@ -216,24 +227,24 @@ async function testConcurrency() {
     for (let i = 0; i < 10; i++) {
       promises.push(createTestDocument(server, `Doc ${i}`, `Content ${i}`))
     }
-    
+
     const results = await Promise.all(promises)
     assert.strictEqual(results.length, 10)
-    
+
     // Verify all documents were created
     const res = await makeRequest(server, '/api/documents')
     const data = await res.json()
     assert.strictEqual(data.documents.length, 10)
 
     // Test concurrent updates
-    const updatePromises = results.map(doc => 
+    const updatePromises = results.map(doc =>
       makeRequest(server, `/api/documents/${doc.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: `Updated ${doc.title}` })
+        body: JSON.stringify({ title: `Updated ${doc.title}` }),
       })
     )
-    
+
     await Promise.all(updatePromises)
 
     console.log('✅ Concurrency tests passed')
@@ -244,7 +255,7 @@ async function testConcurrency() {
 
 async function testLargeData() {
   console.log('🧪 Testing Large Data Handling...')
-  
+
   const server = createApp().listen(0)
   await once(server, 'listening')
 
@@ -252,7 +263,7 @@ async function testLargeData() {
     // Test with large content
     const largeContent = 'x'.repeat(10000) // 10KB content
     const doc = await createTestDocument(server, 'Large Document', largeContent)
-    
+
     // Verify it was stored correctly
     const res = await makeRequest(server, `/api/documents/${doc.id}`)
     const retrieved = await res.json()
@@ -267,14 +278,14 @@ async function testLargeData() {
 // Run all tests
 async function runAllTests() {
   console.log('🚀 Starting Enhanced Test Suite...\n')
-  
+
   try {
     await testBasicCRUD()
     await testErrorHandling()
     await testDataPersistence()
     await testConcurrency()
     await testLargeData()
-    
+
     console.log('\n🎉 All tests passed successfully!')
   } catch (error) {
     console.error('\n❌ Test failed:', error.message)

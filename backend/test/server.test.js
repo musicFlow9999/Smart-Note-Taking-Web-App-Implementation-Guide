@@ -15,7 +15,7 @@ async function run() {
   res = await fetch(`http://localhost:${port}/api/documents`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title: 'Test', content: 'Hello' })
+    body: JSON.stringify({ title: 'Test', content: 'Hello' }),
   })
   assert.strictEqual(res.status, 201)
   const doc = await res.json()
@@ -31,14 +31,14 @@ async function run() {
   res = await fetch(`http://localhost:${port}/api/documents/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title: 'Updated' })
+    body: JSON.stringify({ title: 'Updated' }),
   })
   assert.strictEqual(res.status, 200)
   const updated = await res.json()
   assert.strictEqual(updated.title, 'Updated')
 
   res = await fetch(`http://localhost:${port}/api/documents/${id}`, {
-    method: 'DELETE'
+    method: 'DELETE',
   })
   assert.strictEqual(res.status, 204)
 

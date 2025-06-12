@@ -22,22 +22,27 @@ const logger = winston.createLogger({
   defaultMeta: { service: 'smart-notes-api' },
   transports: [
     new winston.transports.Console({
-      format: process.env.NODE_ENV === 'production' 
-        ? json() 
-        : combine(colorize(), devFormat)
-    })
-  ]
+      format:
+        process.env.NODE_ENV === 'production'
+          ? json()
+          : combine(colorize(), devFormat),
+    }),
+  ],
 })
 
 // Add file transport in production
 if (process.env.NODE_ENV === 'production') {
-  logger.add(new winston.transports.File({ 
-    filename: 'logs/error.log', 
-    level: 'error' 
-  }))
-  logger.add(new winston.transports.File({ 
-    filename: 'logs/combined.log' 
-  }))
+  logger.add(
+    new winston.transports.File({
+      filename: 'logs/error.log',
+      level: 'error',
+    })
+  )
+  logger.add(
+    new winston.transports.File({
+      filename: 'logs/combined.log',
+    })
+  )
 }
 
 export default logger

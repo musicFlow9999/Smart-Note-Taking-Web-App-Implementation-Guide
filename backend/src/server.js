@@ -6,7 +6,7 @@ import {
   createDocument,
   getDocumentById,
   updateDocument,
-  deleteDocument
+  deleteDocument,
 } from './store.js'
 import {
   createUser,
@@ -14,13 +14,15 @@ import {
   generateTokens,
   refreshAccessToken,
   revokeRefreshToken,
-  requireAuth,
-  verifyToken
+  verifyToken,
 } from './auth.js'
 
 function setCorsHeaders(res) {
   res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL || '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'GET, POST, PUT, PATCH, DELETE, OPTIONS'
+  )
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   res.setHeader('Access-Control-Allow-Credentials', 'true')
 }
@@ -65,27 +67,27 @@ export function createApp() {
     logger.info('Request received', {
       method: req.method,
       url: req.url,
-      userAgent: req.headers['user-agent']
+      userAgent: req.headers['user-agent'],
     })
 
     try {
       // Auth endpoints
       if (req.method === 'POST' && pathname === '/api/auth/register') {
         const { username, password, email } = await parseJsonBody(req)
-        
+
         if (!username || !password || !email) {
-          return jsonResponse(res, 400, { 
-            error: 'Username, password, and email are required' 
+          return jsonResponse(res, 400, {
+            error: 'Username, password, and email are required',
           })
         }
 
         try {
           const user = createUser(username, password, email)
           const tokens = generateTokens(user)
-          jsonResponse(res, 201, { 
-            user, 
+          jsonResponse(res, 201, {
+            user,
             accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken
+            refreshToken: tokens.refreshToken,
           })
         } catch (error) {
           logger.warn('Registration failed', { username, error: error.message })
@@ -96,20 +98,20 @@ export function createApp() {
 
       if (req.method === 'POST' && pathname === '/api/auth/login') {
         const { username, password } = await parseJsonBody(req)
-        
+
         if (!username || !password) {
-          return jsonResponse(res, 400, { 
-            error: 'Username and password are required' 
+          return jsonResponse(res, 400, {
+            error: 'Username and password are required',
           })
         }
 
         try {
           const user = authenticateUser(username, password)
           const tokens = generateTokens(user)
-          jsonResponse(res, 200, { 
-            user, 
+          jsonResponse(res, 200, {
+            user,
             accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken
+            refreshToken: tokens.refreshToken,
           })
         } catch (error) {
           logger.warn('Login failed', { username, error: error.message })
@@ -120,7 +122,7 @@ export function createApp() {
 
       if (req.method === 'POST' && pathname === '/api/auth/refresh') {
         const { refreshToken } = await parseJsonBody(req)
-        
+
         if (!refreshToken) {
           return jsonResponse(res, 400, { error: 'Refresh token required' })
         }
@@ -137,11 +139,11 @@ export function createApp() {
 
       if (req.method === 'POST' && pathname === '/api/auth/logout') {
         const { refreshToken } = await parseJsonBody(req)
-        
+
         if (refreshToken) {
           revokeRefreshToken(refreshToken)
         }
-        
+
         jsonResponse(res, 200, { message: 'Logged out successfully' })
         return
       }
@@ -154,17 +156,17 @@ export function createApp() {
 
         const token = authHeader.substring(7)
         const decoded = verifyToken(token)
-        
+
         if (!decoded) {
           return jsonResponse(res, 401, { error: 'Invalid token' })
         }
 
-        jsonResponse(res, 200, { 
-          user: { 
-            id: decoded.id, 
-            username: decoded.username, 
-            email: decoded.email 
-          } 
+        jsonResponse(res, 200, {
+          user: {
+            id: decoded.id,
+            username: decoded.username,
+            email: decoded.email,
+          },
         })
         return
       }
@@ -177,19 +179,20 @@ export function createApp() {
         const docs = await getAllDocuments()
         const searchTerm = query.search
         const tag = query.tag
-        
+
         let filteredDocs = docs
-        
+
         if (searchTerm) {
-          filteredDocs = docs.filter(doc => 
-            doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            doc.content.toLowerCase().includes(searchTerm.toLowerCase())
+          filteredDocs = docs.filter(
+            doc =>
+              doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              doc.content.toLowerCase().includes(searchTerm.toLowerCase())
           )
         }
-        
+
         if (tag) {
-          filteredDocs = filteredDocs.filter(doc =>
-            doc.tags && doc.tags.includes(tag)
+          filteredDocs = filteredDocs.filter(
+            doc => doc.tags && doc.tags.includes(tag)
           )
         }
 
@@ -210,19 +213,19 @@ export function createApp() {
       if (req.method === 'POST' && pathname === '/api/documents') {
         try {
           const { title, content, tags } = await parseJsonBody(req)
-          
+
           if (!title || !content) {
-            return jsonResponse(res, 400, { 
-              error: 'Title and content are required' 
+            return jsonResponse(res, 400, {
+              error: 'Title and content are required',
             })
           }
-          
-          const doc = await createDocument({ 
-            title, 
-            content, 
+
+          const doc = await createDocument({
+            title,
+            content,
             tags: tags || [],
             createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
           })
           jsonResponse(res, 201, doc)
         } catch (error) {
@@ -239,7 +242,7 @@ export function createApp() {
         try {
           const data = await parseJsonBody(req)
           data.updatedAt = new Date().toISOString()
-          
+
           const updated = await updateDocument(idMatch[1], data)
           if (updated) {
             jsonResponse(res, 200, updated)
@@ -268,23 +271,22 @@ export function createApp() {
 
       // Health check endpoint
       if (req.method === 'GET' && pathname === '/api/health') {
-        jsonResponse(res, 200, { 
-          status: 'healthy', 
+        jsonResponse(res, 200, {
+          status: 'healthy',
           timestamp: new Date().toISOString(),
-          version: process.env.npm_package_version || '1.0.0'
+          version: process.env.npm_package_version || '1.0.0',
         })
         return
       }
 
       // 404 for unmatched routes
       jsonResponse(res, 404, { error: 'Endpoint not found' })
-
     } catch (error) {
-      logger.error('Unhandled error', { 
-        error: error.message, 
+      logger.error('Unhandled error', {
+        error: error.message,
         stack: error.stack,
         url: req.url,
-        method: req.method
+        method: req.method,
       })
       jsonResponse(res, 500, { error: 'Internal server error' })
     }
@@ -295,12 +297,12 @@ export function createApp() {
 if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   const PORT = process.env.PORT || 5000
   const server = createApp()
-  
+
   server.listen(PORT, () => {
-    logger.info('Server started', { 
-      port: PORT, 
+    logger.info('Server started', {
+      port: PORT,
       env: process.env.NODE_ENV || 'development',
-      pid: process.pid
+      pid: process.pid,
     })
     console.log(`🚀 Smart Notes API running on port ${PORT}`)
   })

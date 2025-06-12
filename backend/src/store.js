@@ -6,7 +6,7 @@ let storeInitialized = false
 
 async function initializeStore() {
   if (storeInitialized) return
-  
+
   if (process.env.DB_FILE) {
     // Dynamic import to avoid top-level await
     const sqliteStoreModule = await import('./sqliteStoreJS.js')
@@ -16,7 +16,7 @@ async function initializeStore() {
     fileStore.init(process.env.DATA_FILE)
     store = fileStore
   }
-  
+
   storeInitialized = true
 }
 

@@ -1,15 +1,15 @@
-{
-  "name": "smart-notes-backend",
+{  "name": "smart-notes-backend",
   "version": "0.1.0",
-  "type": "module",  "scripts": {
+  "type": "module",
+  "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "test": "node test/server.test.js",
     "test:enhanced": "node test/enhanced.test.js",
     "test:auth": "node test/auth.test.js",
     "test:all": "npm test && npm run test:enhanced && npm run test:auth",
-    "lint": "ESLINT_USE_FLAT_CONFIG=false eslint -c .eslintrc.json src/ test/",
-    "lint:fix": "ESLINT_USE_FLAT_CONFIG=false eslint -c .eslintrc.json src/ test/ --fix",
+    "lint": "eslint -c .eslintrc.json src/ test/",
+    "lint:fix": "eslint -c .eslintrc.json src/ test/ --fix",
     "format": "prettier --write src/ test/"
   },
   "dependencies": {
