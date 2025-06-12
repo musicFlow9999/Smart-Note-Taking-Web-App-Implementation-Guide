@@ -121,6 +121,7 @@ This document describes the interactions and roles of the AI agents involved in 
 
    * Claude Sonnet assists in producing user-centric documentation and onboarding materials.
    * Codex supports technical documentation generation within codebases.
+   * **README Maintenance:** Codex must update `README.md` whenever code or configuration changes alter setup steps, environment variables, or usage details. These updates should be derived from Codex's own analysis of the codebase, `MainGoal.md`, and related configuration files rather than relying solely on existing documentation.
 
 This structured collaboration between Codex and Claude Sonnet ensures an efficient, intelligent, and streamlined development process for ContextFlow, effectively aligning technical implementation with strategic user experience and market considerations.
 
