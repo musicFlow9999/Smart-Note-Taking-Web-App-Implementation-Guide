@@ -6,6 +6,10 @@
 
 ## 🚀 Latest Major Updates
 
+### **Frontend Interface Added (Latest Commit: 085bb40)**
+
+An interactive HTML/JS client is now provided at `frontend/index.html`.
+
 ### **Critical SQL.js Implementation Fixes (Latest Commit: c1e1654)**
 
 Fixed fundamental SQL.js API compatibility issues that were preventing proper database operations. The previous implementation used incorrect API patterns that don't exist in sql.js.
@@ -277,7 +281,7 @@ DATA_FILE=./data.json npm start # Use JSON file storage
 
 ## 🔄 Git Status
 
-- **Latest Commit:** `c1e1654` - "Fix sql.js implementation and improve test isolation"
+- **Latest Commit:** `085bb40` - "Add interactive frontend and update docs"
 - **Branch:** `main`
 - **Remote Status:** Up to date with origin/main
 - **Working Tree:** Clean (no pending changes)

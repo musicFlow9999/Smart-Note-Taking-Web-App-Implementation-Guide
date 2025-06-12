@@ -57,7 +57,7 @@ The following improvements are recommended but not yet implemented:
 <!-- Database integration implemented -->
 - Database integration via SQLite is now available. Set `DB_FILE` to a path
   to use a SQLite database instead of the in-memory array.
-- Create a frontend interface to interact with the API.
+- A web frontend for interacting with the API is available in `frontend/index.html`.
 - Expand tests to cover edge cases and database logic once added.
 - Continuous integration is configured with GitHub Actions to run tests automatically.
 - Configure continuous deployment to Azure with GitHub Actions.
