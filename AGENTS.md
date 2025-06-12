@@ -15,15 +15,19 @@ This document describes the interactions and roles of the AI agents involved in 
   * Facilitate integration with external APIs, including OpenAI API and third-party tools like Zotero, Elasticsearch, and Neo4j.
   * **Context Awareness:** Always maintain `MainGoal.md` in context when generating code to ensure alignment with ContextFlow's vision, feature requirements, and technical architecture specifications.
 
-### 2. **VSCode Agent**
+### 2. **Claude Sonnet Agent (VSCode Integration)**
 
-* **Role:** Integrated Development Environment (IDE) support and environment management.
+* **Role:** Integrated Development Environment (IDE) support, environment management, and strategic development guidance.
 * **Tasks:**
 
   * Interface with OpenAI Codex via VSCode extensions, such as GitHub Copilot.
   * Automatically manage dependencies and provide real-time linting and syntax checking.
   * Offer built-in debugging tools, unit test integration, and deployment automation via task runners or scripts.
   * Manage version control workflows (Git), facilitating seamless code commits, merges, and pull requests.
+  * Provide detailed strategic insights, competitive analyses, and market positioning feedback.
+  * Generate UX and feature-related recommendations for enhancing the ContextFlow platform.
+  * Assist in crafting compelling user-facing documentation, help guides, and onboarding materials.
+  * Deliver comprehensive summaries and context analysis to ensure the application meets defined user needs and business objectives.
   * **Context Awareness:** Always reference `MainGoal.md` to ensure development decisions align with ContextFlow's product vision, target audience, core features, and business objectives.
   * **Codex Documentation Management:** Maintain rolling copies of `codexlastupdate.md` to assist Codex in analysis and code generation:
     
@@ -42,17 +46,6 @@ This document describes the interactions and roles of the AI agents involved in 
     **Timestamp Format:** Use ISO format `YYYY-MM-DD-HHMMSS` (e.g., `codexlastupdate-2025-06-11-143022.md`)
     
     **Purpose:** Provide Codex with historical context of code changes, implementation decisions, and evolution of the codebase for more informed code generation and suggestions.
-
-### 3. **Claude Agent**
-
-* **Role:** Conceptual and strategic agent for content and user-experience development.
-* **Tasks:**
-
-  * Provide detailed strategic insights, competitive analyses, and market positioning feedback.
-  * Generate UX and feature-related recommendations for enhancing the ContextFlow platform.
-  * Assist in crafting compelling user-facing documentation, help guides, and onboarding materials.
-  * Deliver comprehensive summaries and context analysis to ensure the application meets defined user needs and business objectives.
-  * **Context Awareness:** Always maintain `MainGoal.md` in context to ensure all strategic recommendations, UX decisions, and content development align with ContextFlow's product vision, target audience, and business objectives.
   * **Repository Management:** Always ensure the following core dependencies are present in `backend/package.json` when pushing changes to the repository:
     
     **Production Dependencies:**
@@ -77,40 +70,40 @@ This document describes the interactions and roles of the AI agents involved in 
 
 1. **Feature Development Initiation:**
 
-   * Claude analyzes market trends, user feedback, and competitive positioning to suggest optimal feature sets.
+   * Claude Sonnet analyzes market trends, user feedback, and competitive positioning to suggest optimal feature sets.
    * These insights feed into high-level project plans, roadmap adjustments, and detailed user stories.
 
 2. **Coding and Implementation:**
 
    * Developers use natural language prompts in VSCode.
    * OpenAI Codex interprets these prompts and provides real-time code suggestions, snippets, and complete function implementations.
-   * VSCode ensures code quality and manages development workflow (linting, testing, version control).
+   * Claude Sonnet ensures code quality and manages development workflow (linting, testing, version control).
 
 3. **Continuous Feedback Loop:**
 
-   * Claude continuously monitors and provides feedback on user experience effectiveness, refining the scope and relevance of features.
+   * Claude Sonnet continuously monitors and provides feedback on user experience effectiveness, refining the scope and relevance of features.
    * Codex incorporates changes and improvements in real-time code suggestions.
 
 4. **Quality Assurance and Deployment:**
 
-   * VSCode automates unit testing, integration testing, and manages CI/CD pipelines.
+   * Claude Sonnet automates unit testing, integration testing, and manages CI/CD pipelines.
    * Final code review and approval happen within VSCode, facilitated by Codex-generated suggestions.
-   * **Dependency Verification:** Claude agent must verify that all required dependencies are present in `package.json` before any repository push operations.
+   * **Dependency Verification:** Claude Sonnet must verify that all required dependencies are present in `package.json` before any repository push operations.
    * **Configuration Integrity:** Ensure critical configuration files (`.eslintrc.json`, `.prettierrc.json`, `azure.json`) are not excluded by `.gitignore` rules.
-   * **Documentation Archiving:** VSCode agent creates timestamped archive of `codexlastupdate.md` before each push and maintains rolling archive of up to 5 copies for Codex reference.
+   * **Documentation Archiving:** Claude Sonnet creates timestamped archive of `codexlastupdate.md` before each push and maintains rolling archive of up to 5 copies for Codex reference.
 
 5. **Documentation and Knowledge Transfer:**
 
-   * Claude assists in producing user-centric documentation and onboarding materials.
+   * Claude Sonnet assists in producing user-centric documentation and onboarding materials.
    * Codex supports technical documentation generation within codebases.
 
-This structured collaboration between Codex, VSCode, and Claude ensures an efficient, intelligent, and streamlined development process for ContextFlow, effectively aligning technical implementation with strategic user experience and market considerations.
+This structured collaboration between Codex and Claude Sonnet ensures an efficient, intelligent, and streamlined development process for ContextFlow, effectively aligning technical implementation with strategic user experience and market considerations.
 
 ## Context Requirements
 
 ### **MainGoal.md Context Mandate**
 
-All agents (Codex, VSCode, and Claude) must maintain constant awareness of `MainGoal.md` content, which includes:
+Both agents (Codex and Claude Sonnet) must maintain constant awareness of `MainGoal.md` content, which includes:
 
 **Product Vision:**
 - ContextFlow: Intelligent Context-Aware Note-Taking Platform
