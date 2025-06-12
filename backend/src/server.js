@@ -1,4 +1,7 @@
 import http from 'http'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import {
   getAllDocuments,
   createDocument,
@@ -6,17 +9,83 @@ import {
   updateDocument,
   deleteDocument
 } from './store.js'
+import {
+  createUser,
+  authenticateUser,
+  createSession,
+  validateSession,
+  destroySession
+} from './auth.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 function jsonResponse(res, statusCode, data) {
   res.writeHead(statusCode, { 'Content-Type': 'application/json' })
   res.end(JSON.stringify(data))
 }
 
+function serveStaticFile(res, filePath, contentType) {
+  try {
+    const content = fs.readFileSync(filePath)
+    res.writeHead(200, { 'Content-Type': contentType })
+    res.end(content)
+  } catch (error) {
+    res.writeHead(404, { 'Content-Type': 'text/plain' })
+    res.end('File not found')
+  }
+}
+
 export function createApp() {
   return http.createServer(async (req, res) => {
-    const idMatch = req.url.match(/^\/api\/documents\/(\w+)$/)
-
-    if (req.method === 'GET' && req.url === '/api/documents') {
+    const idMatch = req.url.match(/^\/api\/documents\/(\w+)$/)    // Serve frontend
+    if (req.method === 'GET' && req.url === '/') {
+      const frontendPath = path.join(__dirname, '../../frontend/index.html')
+      serveStaticFile(res, frontendPath, 'text/html')
+    }
+    // Authentication endpoints
+    else if (req.method === 'POST' && req.url === '/api/auth/register') {
+      let body = ''
+      req.on('data', chunk => { body += chunk })
+      req.on('end', async () => {
+        try {
+          const { username, password, email } = JSON.parse(body)
+          const user = createUser(username, password, email)
+          jsonResponse(res, 201, { user })
+        } catch (error) {
+          jsonResponse(res, 400, { error: error.message })
+        }
+      })
+    }
+    else if (req.method === 'POST' && req.url === '/api/auth/login') {
+      let body = ''
+      req.on('data', chunk => { body += chunk })
+      req.on('end', async () => {
+        try {
+          const { username, password } = JSON.parse(body)
+          const user = authenticateUser(username, password)
+          const sessionId = createSession(user.id)
+          
+          res.setHeader('Set-Cookie', `sessionId=${sessionId}; HttpOnly; Path=/; Max-Age=86400`)
+          jsonResponse(res, 200, { user, sessionId })
+        } catch (error) {
+          jsonResponse(res, 401, { error: error.message })
+        }
+      })
+    }
+    else if (req.method === 'POST' && req.url === '/api/auth/logout') {
+      const cookies = req.headers.cookie || ''
+      const sessionMatch = cookies.match(/sessionId=([^;]+)/)
+      
+      if (sessionMatch) {
+        destroySession(sessionMatch[1])
+      }
+      
+      res.setHeader('Set-Cookie', 'sessionId=; HttpOnly; Path=/; Max-Age=0')
+      jsonResponse(res, 200, { message: 'Logged out successfully' })
+    }
+    // Document API endpoints
+    else if (req.method === 'GET' && req.url === '/api/documents') {
       const docs = await getAllDocuments()
       jsonResponse(res, 200, { documents: docs })
     } else if (req.method === 'GET' && idMatch) {

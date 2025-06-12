@@ -1,19 +1,46 @@
 import * as memory from './data.js'
 import * as fileStore from './fileData.js'
-import * as sqliteStore from './sqliteStore.js'
 
 let store = memory
+let storeInitialized = false
 
-if (process.env.DB_FILE) {
-  sqliteStore.init(process.env.DB_FILE)
-  store = sqliteStore
-} else if (process.env.DATA_FILE) {
-  fileStore.init(process.env.DATA_FILE)
-  store = fileStore
+async function initializeStore() {
+  if (storeInitialized) return
+  
+  if (process.env.DB_FILE) {
+    // Dynamic import to avoid top-level await
+    const sqliteStoreModule = await import('./sqliteStoreJS.js')
+    await sqliteStoreModule.init(process.env.DB_FILE)
+    store = sqliteStoreModule
+  } else if (process.env.DATA_FILE) {
+    fileStore.init(process.env.DATA_FILE)
+    store = fileStore
+  }
+  
+  storeInitialized = true
 }
 
-export const getAllDocuments = (...args) => store.getAllDocuments(...args)
-export const createDocument = (...args) => store.createDocument(...args)
-export const getDocumentById = (...args) => store.getDocumentById(...args)
-export const updateDocument = (...args) => store.updateDocument(...args)
-export const deleteDocument = (...args) => store.deleteDocument(...args)
+export const getAllDocuments = async (...args) => {
+  await initializeStore()
+  return store.getAllDocuments(...args)
+}
+
+export const createDocument = async (...args) => {
+  await initializeStore()
+  return store.createDocument(...args)
+}
+
+export const getDocumentById = async (...args) => {
+  await initializeStore()
+  return store.getDocumentById(...args)
+}
+
+export const updateDocument = async (...args) => {
+  await initializeStore()
+  return store.updateDocument(...args)
+}
+
+export const deleteDocument = async (...args) => {
+  await initializeStore()
+  return store.deleteDocument(...args)
+}
