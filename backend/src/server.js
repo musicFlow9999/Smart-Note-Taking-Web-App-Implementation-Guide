@@ -188,11 +188,12 @@ export function createApp() {
         }
         
         if (tag) {
-          filteredDocs = filteredDocs.filter(doc => 
+          filteredDocs = filteredDocs.filter(doc =>
             doc.tags && doc.tags.includes(tag)
           )
         }
-          jsonResponse(res, 200, { documents: filteredDocs })
+
+        jsonResponse(res, 200, { documents: filteredDocs })
         return
       }
 
@@ -201,7 +202,8 @@ export function createApp() {
         if (doc) {
           jsonResponse(res, 200, doc)
         } else {
-          jsonResponse(res, 404, { error: 'Not found' })        }
+          jsonResponse(res, 404, { error: 'Not found' })
+        }
         return
       }
 
@@ -231,7 +233,9 @@ export function createApp() {
           }
         }
         return
-      }      if ((req.method === 'PUT' || req.method === 'PATCH') && idMatch) {
+      }
+
+      if ((req.method === 'PUT' || req.method === 'PATCH') && idMatch) {
         try {
           const data = await parseJsonBody(req)
           data.updatedAt = new Date().toISOString()
