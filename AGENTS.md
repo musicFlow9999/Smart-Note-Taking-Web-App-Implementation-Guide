@@ -68,7 +68,7 @@ This document describes the interactions and roles of the AI agents involved in 
     
     **Backup Process:**
     - Source: `C:\github\Smart-Note-Taking-Web-App-Implementation-Guide`
-    - Destination: `C:\github\Backups\NOTESAPP-YYYY-MM-DD-HHMMSS`
+    - Destination: `C:\github\Backups\NOTESAPP\NOTESAPP-YYYY-MM-DD-HHMMSS`
     - Copy all files and folders recursively
     - Exclude `.git` folder from backup (config files and source code only)
     - Timestamp format: ISO `YYYY-MM-DD-HHMMSS` (e.g., `NOTESAPP-2025-06-11-230145`)
@@ -76,7 +76,7 @@ This document describes the interactions and roles of the AI agents involved in 
     **Backup Command Example:**
     ```powershell
     $timestamp = Get-Date -Format "yyyy-MM-dd-HHmmss"
-    $destination = "C:\github\Backups\NOTESAPP-$timestamp"
+    $destination = "C:\github\Backups\NOTESAPP\NOTESAPP-$timestamp"
     Copy-Item -Path "C:\github\Smart-Note-Taking-Web-App-Implementation-Guide\*" -Destination $destination -Recurse -Exclude ".git"
     ```
 
