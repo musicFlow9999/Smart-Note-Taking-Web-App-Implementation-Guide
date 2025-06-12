@@ -59,6 +59,7 @@ The following improvements are recommended but not yet implemented:
   to use a SQLite database instead of the in-memory array.
 - A web frontend for interacting with the API is available in `frontend/index.html`.
 - Expand tests to cover edge cases and database logic once added.
+- Additional authentication test verifies refresh tokens are invalidated after logout.
 - Continuous integration is configured with GitHub Actions to run tests automatically.
 - Configure continuous deployment to Azure with GitHub Actions.
 - Set up a custom domain and HTTPS for the web app.
