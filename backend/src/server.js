@@ -17,8 +17,11 @@ import {
   verifyToken,
 } from './auth.js'
 
+const requests = new Map()
+
 function setCorsHeaders(res) {
-  res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL || '*')
+  const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:3000'
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin)
   res.setHeader(
     'Access-Control-Allow-Methods',
     'GET, POST, PUT, PATCH, DELETE, OPTIONS'
@@ -35,9 +38,14 @@ function jsonResponse(res, statusCode, data) {
 
 function parseJsonBody(req) {
   return new Promise((resolve, reject) => {
+    const MAX_SIZE = 1_000_000 // 1MB
     let body = ''
     req.on('data', chunk => {
       body += chunk
+      if (body.length > MAX_SIZE) {
+        reject(new Error('Payload too large'))
+        req.connection.destroy()
+      }
     })
     req.on('end', () => {
       try {
@@ -54,6 +62,23 @@ export function createApp() {
     const parsedUrl = url.parse(req.url, true)
     const pathname = parsedUrl.pathname
     const query = parsedUrl.query
+
+    // simple rate limiting: 100 requests per 15 minutes per IP
+    const ip = req.socket.remoteAddress
+    const now = Date.now()
+    const info = requests.get(ip) || { count: 0, start: now }
+    if (now - info.start > 15 * 60 * 1000) {
+      info.count = 0
+      info.start = now
+    }
+    info.count += 1
+    requests.set(ip, info)
+    if (info.count > 100) {
+      setCorsHeaders(res)
+      res.writeHead(429, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify({ error: 'Too many requests' }))
+      return
+    }
 
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
@@ -231,6 +256,8 @@ export function createApp() {
         } catch (error) {
           if (error.message === 'Invalid JSON') {
             jsonResponse(res, 400, { error: 'Invalid JSON' })
+          } else if (error.message === 'Payload too large') {
+            jsonResponse(res, 413, { error: 'Payload too large' })
           } else {
             throw error
           }
@@ -252,6 +279,8 @@ export function createApp() {
         } catch (error) {
           if (error.message === 'Invalid JSON') {
             jsonResponse(res, 400, { error: 'Invalid JSON' })
+          } else if (error.message === 'Payload too large') {
+            jsonResponse(res, 413, { error: 'Payload too large' })
           } else {
             throw error
           }

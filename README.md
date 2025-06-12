@@ -26,6 +26,9 @@ memory. The server is intended as a starting point for further development.
    The API will be available at `http://localhost:5000` by default.
    Set the `DATA_FILE` environment variable to persist documents to a JSON file.
    Alternatively, provide a `DB_FILE` path to use a SQLite database.
+   You must set `JWT_SECRET` to a strong random value for consistent sessions.
+   Optionally set `FRONTEND_URL` to restrict CORS access (defaults to
+   `http://localhost:3000`).
 
 3. Run the test suite:
 
@@ -49,6 +52,13 @@ and required table will be created automatically if they do not exist.
 
 By default, documents are stored in memory so they reset when the server restarts.
 Set a `DATA_FILE` path to persist them across sessions, or consider using a database for a real application.
+
+## Security Notes
+
+The API now enforces a 1&nbsp;MB payload limit and simple rate limiting
+(100 requests per 15&nbsp;minutes per IP). Configure `FRONTEND_URL` to
+restrict cross‑origin requests and supply a strong `JWT_SECRET` for
+token signing.
 
 ## Next Steps
 
