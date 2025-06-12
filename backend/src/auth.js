@@ -3,8 +3,14 @@ import jwt from 'jsonwebtoken'
 import logger from './logger.js'
 
 // JWT configuration
-const JWT_SECRET =
-  process.env.JWT_SECRET || 'your-secret-key-change-in-production'
+let JWT_SECRET = process.env.JWT_SECRET
+if (!JWT_SECRET) {
+  // Generate a random secret if none provided, but warn that it's temporary
+  JWT_SECRET = crypto.randomBytes(32).toString('hex')
+  logger.warn(
+    'JWT_SECRET not set. Generated temporary secret; sessions will be invalid on restart'
+  )
+}
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h'
 const REFRESH_TOKEN_EXPIRES_IN = '7d'
 
@@ -183,12 +189,4 @@ export function requireAuth(req, res, next) {
   next()
 }
 
-// Create a default admin user for testing
-try {
-  createUser('admin', 'admin123', 'admin@smartnotes.com')
-  logger.info(
-    'Default admin user created (username: admin, password: admin123)'
-  )
-} catch (error) {
-  // User already exists
-}
+// In production, create users through registration endpoint or admin interface

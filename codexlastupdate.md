@@ -1,6 +1,6 @@
 # Codex Last Update - Smart Note-Taking Web App
 
-**Last Updated:** June 12, 2025 07:05 UTC
+**Last Updated:** June 12, 2025 12:54 UTC
 **Version:** 1.3.0  
 **Status:** Local Development Ready ✅ | Azure Deployment Configured 🔧
 
@@ -13,6 +13,12 @@ An interactive HTML/JS client is now provided at `frontend/index.html`.
 ### **Critical SQL.js Implementation Fixes (Latest Commit: c1e1654)**
 
 Fixed fundamental SQL.js API compatibility issues that were preventing proper database operations. The previous implementation used incorrect API patterns that don't exist in sql.js.
+
+### **Security Hardening (This Commit)**
+- Removed default admin user creation
+- Enforced JWT secret requirement with temporary secret when absent
+- Restricted CORS to `FRONTEND_URL`
+- Added 1MB body limit and basic rate limiting
 
 #### **Key Changes Made:**
 
@@ -370,6 +376,7 @@ DATA_FILE=./data.json npm start # Use JSON file storage
 **For Code**
 - Investigate npm start script configuration to ensure it runs from the backend directory.
 - Update documentation with a clear setup guide once resolved.
+- Verify new security features (CORS restrictions, rate limiting) do not break existing tests.
 
 ### Azure Deployment Troubleshooting
 
