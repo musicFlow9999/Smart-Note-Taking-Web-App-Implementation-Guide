@@ -117,15 +117,23 @@ export function createDocument(data) {
   const tagsJson = JSON.stringify(tags)
   const now = new Date().toISOString()
 
-  const stmt = db.prepare(`
-    INSERT INTO documents (title, content, tags, created_at, updated_at, user_id) 
-    VALUES (?, ?, ?, ?, ?, ?)
-  `)
-
   try {
-    const info = stmt.run([title, content, tagsJson, now, now, userId])
+    // Execute the INSERT statement
+    db.run(
+      `INSERT INTO documents (title, content, tags, created_at, updated_at, user_id) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [title, content, tagsJson, now, now, userId]
+    )
+    
+    // Get the last insert rowid
+    const stmt = db.prepare('SELECT last_insert_rowid() as id')
+    stmt.step()
+    const result = stmt.getAsObject()
+    const id = String(result.id)
+    stmt.free()
+
     const newDoc = {
-      id: String(info.lastInsertRowid),
+      id,
       title,
       content,
       tags,
@@ -136,8 +144,9 @@ export function createDocument(data) {
     saveDatabase()
     logger.info('Document created', { id: newDoc.id, title, userId })
     return newDoc
-  } finally {
-    stmt.free()
+  } catch (error) {
+    logger.error('Failed to create document', { error: error.message })
+    throw error
   }
 }
 
@@ -191,52 +200,62 @@ export function updateDocument(id, data) {
   values.push(new Date().toISOString())
   values.push(parseInt(id))
 
-  const stmt = db.prepare(`
-    UPDATE documents SET ${updates.join(', ')} WHERE id = ?
-  `)
-
   try {
-    stmt.run(values)
+    db.run(
+      `UPDATE documents SET ${updates.join(', ')} WHERE id = ?`,
+      values
+    )
     saveDatabase()
     const updated = getDocumentById(id)
-    logger.info('Document updated', { id, title: updated.title })
+    logger.info('Document updated', { id, title: updated?.title })
     return updated
-  } finally {
-    stmt.free()
+  } catch (error) {
+    logger.error('Failed to update document', { error: error.message, id })
+    throw error
   }
 }
 
 export function deleteDocument(id) {
-  const stmt = db.prepare('DELETE FROM documents WHERE id = ?')
-
   try {
-    const info = stmt.run([parseInt(id)])
-    saveDatabase()
-    const deleted = info.changes > 0
-    if (deleted) {
-      logger.info('Document deleted', { id })
-    }
-    return deleted
-  } finally {
+    // Check if document exists first
+    const stmt = db.prepare('SELECT COUNT(*) as count FROM documents WHERE id = ?')
+    stmt.bind([parseInt(id)])
+    stmt.step()
+    const result = stmt.getAsObject()
+    const exists = result.count > 0
     stmt.free()
+
+    if (!exists) {
+      return false
+    }
+
+    // Delete the document
+    db.run('DELETE FROM documents WHERE id = ?', [parseInt(id)])
+    saveDatabase()
+    logger.info('Document deleted', { id })
+    return true
+  } catch (error) {
+    logger.error('Failed to delete document', { error: error.message, id })
+    return false
   }
 }
 
 // User management functions
 export function createUser(userData) {
   const { id, username, email, passwordHash, passwordSalt } = userData
-  const stmt = db.prepare(`
-    INSERT INTO users (id, username, email, password_hash, password_salt) 
-    VALUES (?, ?, ?, ?, ?)
-  `)
-
+  
   try {
-    stmt.run([id, username, email, passwordHash, passwordSalt])
+    db.run(
+      `INSERT INTO users (id, username, email, password_hash, password_salt) 
+       VALUES (?, ?, ?, ?, ?)`,
+      [id, username, email, passwordHash, passwordSalt]
+    )
     saveDatabase()
     logger.info('User created in database', { userId: id, username })
     return { id, username, email }
-  } finally {
-    stmt.free()
+  } catch (error) {
+    logger.error('Failed to create user', { error: error.message, username })
+    throw error
   }
 }
 
@@ -266,16 +285,17 @@ export function getUserByUsername(username) {
 }
 
 export function storeRefreshToken(token, userId, expiresAt) {
-  const stmt = db.prepare(`
-    INSERT INTO refresh_tokens (token, user_id, expires_at) 
-    VALUES (?, ?, ?)
-  `)
-
   try {
-    stmt.run([token, userId, expiresAt])
+    db.run(
+      `INSERT INTO refresh_tokens (token, user_id, expires_at) 
+       VALUES (?, ?, ?)`,
+      [token, userId, expiresAt]
+    )
     saveDatabase()
-  } finally {
-    stmt.free()
+    logger.info('Refresh token stored', { userId })
+  } catch (error) {
+    logger.error('Failed to store refresh token', { error: error.message, userId })
+    throw error
   }
 }
 
@@ -303,13 +323,26 @@ export function getRefreshToken(token) {
 }
 
 export function deleteRefreshToken(token) {
-  const stmt = db.prepare('DELETE FROM refresh_tokens WHERE token = ?')
-
   try {
-    const info = stmt.run([token])
+    // Check if token exists first
+    const stmt1 = db.prepare('SELECT COUNT(*) as count FROM refresh_tokens WHERE token = ?')
+    stmt1.bind([token])
+    stmt1.step()
+    const result = stmt1.getAsObject()
+    const exists = result.count > 0
+    stmt1.free()
+
+    if (!exists) {
+      return false
+    }
+
+    // Delete the token
+    db.run('DELETE FROM refresh_tokens WHERE token = ?', [token])
     saveDatabase()
-    return info.changes > 0
-  } finally {
-    stmt.free()
+    logger.info('Refresh token deleted')
+    return true
+  } catch (error) {
+    logger.error('Failed to delete refresh token', { error: error.message })
+    return false
   }
 }

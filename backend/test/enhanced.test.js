@@ -3,6 +3,7 @@ import { once } from 'events'
 import assert from 'assert'
 import fs from 'fs'
 import path from 'path'
+import { resetStore } from '../src/store.js'
 
 // Test utilities
 async function makeRequest(server, endpoint, options = {}) {
@@ -27,6 +28,23 @@ async function createTestDocument(
 // Test suites
 async function testBasicCRUD() {
   console.log('🧪 Testing Basic CRUD Operations...')
+
+  // Use a temporary database file to ensure clean state
+  const testDbPath = path.join(process.cwd(), 'basic-crud-test.db')
+  
+  // Clean up any existing test file
+  try {
+    fs.unlinkSync(testDbPath)
+  } catch {
+    // Ignore if file doesn't exist
+  }
+
+  // Set environment variable for test database
+  const originalDbFile = process.env.DB_FILE
+  process.env.DB_FILE = testDbPath
+  
+  // Reset store to pick up new DB_FILE
+  resetStore()
 
   const server = createApp().listen(0)
   await once(server, 'listening')
@@ -97,11 +115,42 @@ async function testBasicCRUD() {
     console.log('✅ Basic CRUD tests passed')
   } finally {
     server.close()
+    
+    // Restore original DB_FILE setting
+    if (originalDbFile) {
+      process.env.DB_FILE = originalDbFile
+    } else {
+      delete process.env.DB_FILE
+    }
+    
+    // Clean up test file
+    try {
+      fs.unlinkSync(testDbPath)
+    } catch {
+      // Ignore if file doesn't exist
+    }
   }
 }
 
 async function testErrorHandling() {
   console.log('🧪 Testing Error Handling...')
+
+  // Use a temporary database file to ensure clean state
+  const testDbPath = path.join(process.cwd(), 'error-handling-test.db')
+  
+  // Clean up any existing test file
+  try {
+    fs.unlinkSync(testDbPath)
+  } catch {
+    // Ignore if file doesn't exist
+  }
+
+  // Set environment variable for test database
+  const originalDbFile = process.env.DB_FILE
+  process.env.DB_FILE = testDbPath
+  
+  // Reset store to pick up new DB_FILE
+  resetStore()
 
   const server = createApp().listen(0)
   await once(server, 'listening')
@@ -151,6 +200,20 @@ async function testErrorHandling() {
     console.log('✅ Error handling tests passed')
   } finally {
     server.close()
+    
+    // Restore original DB_FILE setting
+    if (originalDbFile) {
+      process.env.DB_FILE = originalDbFile
+    } else {
+      delete process.env.DB_FILE
+    }
+    
+    // Clean up test file
+    try {
+      fs.unlinkSync(testDbPath)
+    } catch {
+      // Ignore if file doesn't exist
+    }
   }
 }
 
@@ -169,6 +232,9 @@ async function testDataPersistence() {
   // Set environment variable for test database
   const originalDbFile = process.env.DB_FILE
   process.env.DB_FILE = testDbPath
+  
+  // Reset store to pick up new DB_FILE
+  resetStore()
 
   try {
     // Start first server instance
@@ -218,6 +284,23 @@ async function testDataPersistence() {
 async function testConcurrency() {
   console.log('🧪 Testing Concurrent Operations...')
 
+  // Use a temporary database file to ensure clean state
+  const testDbPath = path.join(process.cwd(), 'concurrency-test.db')
+  
+  // Clean up any existing test file
+  try {
+    fs.unlinkSync(testDbPath)
+  } catch {
+    // Ignore if file doesn't exist
+  }
+
+  // Set environment variable for test database
+  const originalDbFile = process.env.DB_FILE
+  process.env.DB_FILE = testDbPath
+  
+  // Reset store to pick up new DB_FILE
+  resetStore()
+
   const server = createApp().listen(0)
   await once(server, 'listening')
 
@@ -250,11 +333,42 @@ async function testConcurrency() {
     console.log('✅ Concurrency tests passed')
   } finally {
     server.close()
+    
+    // Restore original DB_FILE setting
+    if (originalDbFile) {
+      process.env.DB_FILE = originalDbFile
+    } else {
+      delete process.env.DB_FILE
+    }
+    
+    // Clean up test file
+    try {
+      fs.unlinkSync(testDbPath)
+    } catch {
+      // Ignore if file doesn't exist
+    }
   }
 }
 
 async function testLargeData() {
   console.log('🧪 Testing Large Data Handling...')
+
+  // Use a temporary database file to ensure clean state
+  const testDbPath = path.join(process.cwd(), 'large-data-test.db')
+  
+  // Clean up any existing test file
+  try {
+    fs.unlinkSync(testDbPath)
+  } catch {
+    // Ignore if file doesn't exist
+  }
+
+  // Set environment variable for test database
+  const originalDbFile = process.env.DB_FILE
+  process.env.DB_FILE = testDbPath
+  
+  // Reset store to pick up new DB_FILE
+  resetStore()
 
   const server = createApp().listen(0)
   await once(server, 'listening')
@@ -272,6 +386,20 @@ async function testLargeData() {
     console.log('✅ Large data tests passed')
   } finally {
     server.close()
+    
+    // Restore original DB_FILE setting
+    if (originalDbFile) {
+      process.env.DB_FILE = originalDbFile
+    } else {
+      delete process.env.DB_FILE
+    }
+    
+    // Clean up test file
+    try {
+      fs.unlinkSync(testDbPath)
+    } catch {
+      // Ignore if file doesn't exist
+    }
   }
 }
 

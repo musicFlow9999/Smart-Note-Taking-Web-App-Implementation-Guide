@@ -20,6 +20,12 @@ async function initializeStore() {
   storeInitialized = true
 }
 
+// Function to reset store for testing
+export function resetStore() {
+  storeInitialized = false
+  store = memory
+}
+
 export const getAllDocuments = async (...args) => {
   await initializeStore()
   return store.getAllDocuments(...args)
