@@ -23,6 +23,23 @@ This document describes the interactions and roles of the AI agents involved in 
   * Automatically manage dependencies and provide real-time linting and syntax checking.
   * Offer built-in debugging tools, unit test integration, and deployment automation via task runners or scripts.
   * Manage version control workflows (Git), facilitating seamless code commits, merges, and pull requests.
+  * **Codex Documentation Management:** Maintain rolling copies of `codexlastupdate.md` to assist Codex in analysis and code generation:
+    
+    **File Naming Convention:**
+    ```
+    codexlastupdate.md                    # Current/latest version
+    codexlastupdate-YYYY-MM-DD-HHMMSS.md  # Timestamped archives
+    ```
+    
+    **Archive Management:**
+    - Keep up to 5 timestamped copies of `codexlastupdate.md`
+    - Create new timestamped copy before each repository push
+    - Remove oldest archive when exceeding 5 copies
+    - Always maintain the current `codexlastupdate.md` as the primary reference
+    
+    **Timestamp Format:** Use ISO format `YYYY-MM-DD-HHMMSS` (e.g., `codexlastupdate-2025-06-11-143022.md`)
+    
+    **Purpose:** Provide Codex with historical context of code changes, implementation decisions, and evolution of the codebase for more informed code generation and suggestions.
 
 ### 3. **Claude Agent**
 
@@ -77,6 +94,7 @@ This document describes the interactions and roles of the AI agents involved in 
    * Final code review and approval happen within VSCode, facilitated by Codex-generated suggestions.
    * **Dependency Verification:** Claude agent must verify that all required dependencies are present in `package.json` before any repository push operations.
    * **Configuration Integrity:** Ensure critical configuration files (`.eslintrc.json`, `.prettierrc.json`, `azure.json`) are not excluded by `.gitignore` rules.
+   * **Documentation Archiving:** VSCode agent creates timestamped archive of `codexlastupdate.md` before each push and maintains rolling archive of up to 5 copies for Codex reference.
 
 5. **Documentation and Knowledge Transfer:**
 

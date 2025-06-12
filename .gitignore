@@ -16,6 +16,9 @@ backend/*.db
 !.vscode/settings.json
 !.vscode/launch.json
 
+# Include all codex documentation files
+!codexlastupdate*.md
+
 # Node modules
 node_modules/
 
