@@ -29,23 +29,28 @@ This document describes the interactions and roles of the AI agents involved in 
   * Assist in crafting compelling user-facing documentation, help guides, and onboarding materials.
   * Deliver comprehensive summaries and context analysis to ensure the application meets defined user needs and business objectives.
   * **Context Awareness:** Always reference `MainGoal.md` to ensure development decisions align with ContextFlow's product vision, target audience, core features, and business objectives.
-  * **Codex Documentation Management:** Maintain rolling copies of `codexlastupdate.md` to assist Codex in analysis and code generation:
+  * **Codex Documentation Management:** Maintain rolling copies of `codexlastupdate.md` to assist Codex in analysis and code generation. Claude Sonnet mirrors this process with `claudes4lastupdate.md` so Codex knows the latest changes from Claude:
     
     **File Naming Convention:**
     ```
     codexlastupdate.md                    # Current/latest version
     codexlastupdate-YYYY-MM-DD-HHMMSS.md  # Timestamped archives
+    claudes4lastupdate.md                 # Latest updates from Claude
+    claudes4lastupdate-YYYY-MM-DD-HHMMSS.md # Claude's timestamped archives
     ```
     
     **Archive Management:**
-    - Keep up to 5 timestamped copies of `codexlastupdate.md`
-    - Create new timestamped copy before each repository push
-    - Remove oldest archive when exceeding 5 copies
-    - Always maintain the current `codexlastupdate.md` as the primary reference
+    - Keep up to 5 timestamped copies of each update file
+    - Codex creates a timestamped `codexlastupdate-YYYY-MM-DD-HHMMSS.md` before every push
+    - Claude creates a timestamped `claudes4lastupdate-YYYY-MM-DD-HHMMSS.md` before every push
+    - Remove the oldest archive when exceeding 5 copies per file
+    - Always maintain the non timestamped files as the primary reference
     
     **Timestamp Format:** Use ISO format `YYYY-MM-DD-HHMMSS` (e.g., `codexlastupdate-2025-06-11-143022.md`)
     
-    **Purpose:** Provide Codex with historical context of code changes, implementation decisions, and evolution of the codebase for more informed code generation and suggestions.  * **Repository Management:** Always ensure the following core dependencies are present in `backend/package.json` when pushing changes to the repository:
+    **Purpose:** Provide a bidirectional record of updates so each agent stays aware of the other's latest changes. Codex uses `codexlastupdate.md` to advise Claude which dependencies must be present for accurate testing.
+
+    * **Repository Management:** Always ensure the following core dependencies are present in `backend/package.json` when pushing changes to the repository:
     
     **Production Dependencies:**
     ```json
@@ -104,7 +109,10 @@ This document describes the interactions and roles of the AI agents involved in 
    * Final code review and approval happen within VSCode, facilitated by Codex-generated suggestions.
    * **Dependency Verification:** Claude Sonnet must verify that all required dependencies are present in `package.json` before any repository push operations.
    * **Configuration Integrity:** Ensure critical configuration files (`.eslintrc.json`, `.prettierrc.json`, `azure.json`) are not excluded by `.gitignore` rules.
-   * **Documentation Archiving:** Claude Sonnet creates timestamped archive of `codexlastupdate.md` before each push and maintains rolling archive of up to 5 copies for Codex reference.
+  * **Documentation Archiving:**
+      - Claude Sonnet creates a timestamped archive of `claudes4lastupdate.md` before each push and keeps up to 5 copies.
+      - Codex creates a timestamped archive of `codexlastupdate.md` before each push and keeps up to 5 copies.
+      - These files allow each agent to track the other's recent changes and instructions.
    * **Repository Backup:** When user requests "AGENT BACKUP REPO", Claude Sonnet immediately creates timestamped backup to `C:\github\Backups\NOTESAPP-YYYY-MM-DD-HHMMSS`.
 
 5. **Documentation and Knowledge Transfer:**
