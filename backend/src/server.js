@@ -446,9 +446,9 @@ export function createApp() {
             return
           }
         } catch (error) {
-          logger.error('Error serving static file', { 
-            error: error.message, 
-            pathname 
+          logger.error('Error serving static file', {
+            error: error.message,
+            pathname,
           })
         }
       }

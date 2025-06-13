@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { createApp } from '../src/server.js'
 import http from 'http'
 import {
