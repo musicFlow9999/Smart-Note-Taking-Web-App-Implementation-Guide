@@ -298,12 +298,12 @@
             .main-content, .auth-container {
                 grid-template-columns: 1fr;
             }
-            
+
             .filter-row {
                 flex-direction: column;
                 align-items: stretch;
             }
-            
+
             .filter-row input, .filter-row button {
                 margin-right: 0;
                 margin-bottom: 10px;
@@ -441,27 +441,27 @@
         let currentTags = [];
         let editingNote = null;
         let accessToken = localStorage.getItem('accessToken');        let refreshToken = localStorage.getItem('refreshToken');
-        
+
         // API Configuration - Auto-detect environment
         const API_BASE = (() => {
             const hostname = window.location.hostname;
             const protocol = window.location.protocol;
-            
+
             // If served from file:// protocol (local file)
             if (protocol === 'file:') {
                 return 'https://smart-notes-app-lamb2025.azurewebsites.net/api';
             }
-            
+
             // If served from localhost (development)
             if (hostname === 'localhost' || hostname === '127.0.0.1') {
                 return 'http://localhost:5000/api';
             }
-            
+
             // If served from Azure (same domain), use relative path
             if (hostname.includes('azurewebsites.net')) {
                 return '/api';
             }
-            
+
             // Default fallback to Azure
             return 'https://smart-notes-app-lamb2025.azurewebsites.net/api';
         })();
@@ -479,7 +479,7 @@
         function showTab(tab) {
             document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
             document.querySelector(`button[onclick="showTab('${tab}')"]`).classList.add('active');
-            
+
             if (tab === 'login') {
                 document.getElementById('loginForm').classList.remove('hidden');
                 document.getElementById('registerForm').classList.add('hidden');
@@ -605,7 +605,7 @@
             localStorage.removeItem('refreshToken');
             accessToken = null;
             refreshToken = null;
-            
+
             showAuthSection();
         }
 
@@ -633,13 +633,13 @@
             };
 
             const response = await fetch(`${API_BASE}${endpoint}`, config);
-            
+
             if (response.status === 401) {
                 await refreshAccessToken();
                 config.headers['Authorization'] = `Bearer ${accessToken}`;
                 return fetch(`${API_BASE}${endpoint}`, config);
             }
-            
+
             return response;
         }
 
@@ -665,7 +665,7 @@
 
         async function handleSubmit(event) {
             event.preventDefault();
-            
+
             const title = document.getElementById('noteTitle').value;
             const content = document.getElementById('noteContent').value;
             const tags = currentTags;
@@ -702,7 +702,7 @@
 
             try {
                 const response = await apiCall(`/documents/${id}`, { method: 'DELETE' });
-                
+
                 if (response.ok) {
                     showAlert('noteAlert', 'Note deleted!', 'success');
                     loadNotes();
@@ -720,7 +720,7 @@
             document.getElementById('noteContent').value = note.content;
             currentTags = [...(note.tags || [])];
             updateTagsDisplay();
-            
+
             document.getElementById('formTitle').textContent = '✏️ Edit Note';
             document.getElementById('submitBtn').textContent = 'Update Note';
             document.getElementById('cancelBtn').classList.remove('hidden');
@@ -751,7 +751,7 @@
         function addTag() {
             const input = document.getElementById('tagInput');
             const tag = input.value.trim().toLowerCase();
-            
+
             if (tag && !currentTags.includes(tag)) {
                 currentTags.push(tag);
                 updateTagsDisplay();
@@ -766,7 +766,7 @@
 
         function updateTagsDisplay() {
             const tagList = document.getElementById('tagList');
-            tagList.innerHTML = currentTags.map(tag => 
+            tagList.innerHTML = currentTags.map(tag =>
                 `<span class="tag">${tag} <span class="remove" onclick="removeTag('${tag}')">×</span></span>`
             ).join('');
         }
@@ -782,7 +782,7 @@
                     note.tags.forEach(tag => allTags.add(tag));
                 }
             });
-            
+
             const tagFilter = document.getElementById('tagFilter');
             tagFilter.innerHTML = '<option value="">All Tags</option>';
             Array.from(allTags).sort().forEach(tag => {
@@ -793,7 +793,7 @@
         // Display and filtering
         function displayNotes() {
             const container = document.getElementById('notesContainer');
-            
+
             if (notes.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No notes yet. Create your first note!</p>';
                 return;
@@ -821,22 +821,22 @@
         function filterNotes() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const selectedTag = document.getElementById('tagFilter').value;
-            
+
             let filteredNotes = notes;
-            
+
             if (searchTerm) {
-                filteredNotes = filteredNotes.filter(note => 
+                filteredNotes = filteredNotes.filter(note =>
                     note.title.toLowerCase().includes(searchTerm) ||
                     note.content.toLowerCase().includes(searchTerm)
                 );
             }
-            
+
             if (selectedTag) {
-                filteredNotes = filteredNotes.filter(note => 
+                filteredNotes = filteredNotes.filter(note =>
                     note.tags && note.tags.includes(selectedTag)
                 );
             }
-            
+
             const container = document.getElementById('notesContainer');
             if (filteredNotes.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No notes match your filters.</p>';

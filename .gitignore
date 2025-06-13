@@ -34,9 +34,9 @@ backend/*.db
 *.json
 !package.json
 !package-lock.json
-!.eslintrc.json
+!eslint.config.js
 !.prettierrc.json
-!backend/.eslintrc.json
+!backend/eslint.config.js
 !backend/.prettierrc.json
 !azure.json
 !.vscode/settings.json

@@ -4,7 +4,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import logger from './logger.js'
 
-// ENVIRONMENT CONTEXT FOR AI ASSISTANTS  
+// ENVIRONMENT CONTEXT FOR AI ASSISTANTS
 // OS: Windows_NT | Shell: PowerShell | NOT Linux Container
 // Database path uses Windows conventions when developing locally
 // Deployed to Azure App Service Linux containers in production
@@ -42,7 +42,7 @@ export async function init(dbFilePath) {
   // Ensure the directory exists with robust error handling
   const dir = path.dirname(dbPath)
   logger.debug('Checking database directory', { dir, dbPath })
-  
+
   try {
     if (!fs.existsSync(dir)) {
       logger.info('Creating database directory', { dir })
@@ -51,19 +51,19 @@ export async function init(dbFilePath) {
     } else {
       logger.debug('Database directory already exists', { dir })
     }
-    
+
     // Verify directory is writable
     fs.accessSync(dir, fs.constants.W_OK)
     logger.debug('Database directory is writable', { dir })
-    
+
   } catch (error) {
-    logger.error('Failed to create or access database directory', { 
-      dir, 
+    logger.error('Failed to create or access database directory', {
+      dir,
       error: error.message,
       code: error.code,
-      stack: error.stack 
+      stack: error.stack
     })
-    
+
     // Try alternative paths for Azure App Service
     if (process.env.NODE_ENV === 'production') {
       const altPaths = [
@@ -71,7 +71,7 @@ export async function init(dbFilePath) {
         path.join(process.cwd(), 'data'),
         path.join(__dirname, '..', '..', 'data')
       ]
-      
+
       for (const altPath of altPaths) {
         try {
           logger.info('Trying alternative database path', { altPath })
@@ -79,13 +79,13 @@ export async function init(dbFilePath) {
             fs.mkdirSync(altPath, { recursive: true })
           }
           fs.accessSync(altPath, fs.constants.W_OK)
-          
+
           // Update dbPath to use the working alternative
           const altDbPath = path.join(altPath, path.basename(dbPath))
           logger.info('Using alternative database path', { original: dbPath, alternative: altDbPath })
           dbPath = altDbPath
           break
-          
+
         } catch (altError) {
           logger.warn('Alternative path failed', { altPath, error: altError.message })
           continue
@@ -229,14 +229,14 @@ export async function init(dbFilePath) {
   db.run(
     `CREATE INDEX IF NOT EXISTS idx_documents_user_id ON documents(user_id)`
   )
-  
+
   // Only create created_at index if the column exists
   if (hasCreatedAt) {
     db.run(
       `CREATE INDEX IF NOT EXISTS idx_documents_created_at ON documents(created_at)`
     )
   }
-  
+
   db.run(
     `CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id)`
   )
@@ -314,7 +314,7 @@ export function createDocument(data) {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [title, content, tagsJson, notebookId, sectionId, now, now, userId]
     )
-    
+
     // Get the last insert rowid
     const stmt = db.prepare('SELECT last_insert_rowid() as id')
     stmt.step()
@@ -445,10 +445,10 @@ export function deleteDocument(id) {
 // User management functions
 export function createUser(userData) {
   const { id, username, email, passwordHash, passwordSalt } = userData
-  
+
   try {
     db.run(
-      `INSERT INTO users (id, username, email, password_hash, password_salt) 
+      `INSERT INTO users (id, username, email, password_hash, password_salt)
        VALUES (?, ?, ?, ?, ?)`,
       [id, username, email, passwordHash, passwordSalt]
     )
@@ -463,7 +463,7 @@ export function createUser(userData) {
 
 export function getUserByUsername(username) {
   const stmt = db.prepare(`
-    SELECT id, username, email, password_hash, password_salt, created_at 
+    SELECT id, username, email, password_hash, password_salt, created_at
     FROM users WHERE username = ?
   `)
 
@@ -489,7 +489,7 @@ export function getUserByUsername(username) {
 export function storeRefreshToken(token, userId, expiresAt) {
   try {
     db.run(
-      `INSERT INTO refresh_tokens (token, user_id, expires_at) 
+      `INSERT INTO refresh_tokens (token, user_id, expires_at)
        VALUES (?, ?, ?)`,
       [token, userId, expiresAt]
     )
@@ -503,7 +503,7 @@ export function storeRefreshToken(token, userId, expiresAt) {
 
 export function getRefreshToken(token) {
   const stmt = db.prepare(`
-    SELECT token, user_id, created_at, expires_at 
+    SELECT token, user_id, created_at, expires_at
     FROM refresh_tokens WHERE token = ?
   `)
 

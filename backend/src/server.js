@@ -36,14 +36,14 @@ const requests = new Map()
 
 function setCorsHeaders(res) {
   const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:3000'
-  
+
   // For development, also allow file:// protocol requests
   if (process.env.NODE_ENV !== 'production') {
     res.setHeader('Access-Control-Allow-Origin', '*')
   } else {
     res.setHeader('Access-Control-Allow-Origin', allowedOrigin)
   }
-  
+
   res.setHeader(
     'Access-Control-Allow-Methods',
     'GET, POST, PUT, PATCH, DELETE, OPTIONS'
@@ -401,18 +401,18 @@ export function createApp() {
       if (!pathname.startsWith('/api/')) {
         try {
           let filePath = pathname
-          
+
           // Default to index.html for root and other routes (SPA routing)
           if (pathname === '/' || !pathname.includes('.')) {
             filePath = '/index.html'
           }
-          
+
           const staticFilePath = join(__dirname, '../public', filePath)
-          
+
           if (existsSync(staticFilePath)) {
             const content = readFileSync(staticFilePath)
             const ext = filePath.split('.').pop()
-            
+
             // Set content type based on file extension
             let contentType = 'text/html'
             switch (ext) {
@@ -439,7 +439,7 @@ export function createApp() {
                 contentType = 'image/x-icon'
                 break
             }
-            
+
             setCorsHeaders(res)
             res.writeHead(200, { 'Content-Type': contentType })
             res.end(content)
