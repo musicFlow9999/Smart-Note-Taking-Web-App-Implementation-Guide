@@ -16,6 +16,12 @@ import {
   getDocumentById,
   updateDocument,
   deleteDocument,
+  getAllNotebooks,
+  createNotebook,
+  getAllSectionGroups,
+  createSectionGroup,
+  getAllSections,
+  createSection,
 } from './store.js'
 import {
   createUser,
@@ -212,6 +218,69 @@ export function createApp() {
         return
       }
 
+      // Notebooks endpoints
+      if (req.method === 'GET' && pathname === '/api/notebooks') {
+        const notebooks = await getAllNotebooks()
+        jsonResponse(res, 200, { notebooks })
+        return
+      }
+
+      if (req.method === 'POST' && pathname === '/api/notebooks') {
+        try {
+          const { name } = await parseJsonBody(req)
+          if (!name) {
+            return jsonResponse(res, 400, { error: 'Name required' })
+          }
+          const nb = await createNotebook(name)
+          jsonResponse(res, 201, nb)
+        } catch (error) {
+          jsonResponse(res, 400, { error: 'Invalid JSON' })
+        }
+        return
+      }
+
+      // Section groups endpoints
+      if (req.method === 'GET' && pathname === '/api/section-groups') {
+        const groups = await getAllSectionGroups()
+        jsonResponse(res, 200, { sectionGroups: groups })
+        return
+      }
+
+      if (req.method === 'POST' && pathname === '/api/section-groups') {
+        try {
+          const { notebookId, name } = await parseJsonBody(req)
+          if (!name || !notebookId) {
+            return jsonResponse(res, 400, { error: 'notebookId and name required' })
+          }
+          const sg = await createSectionGroup(notebookId, name)
+          jsonResponse(res, 201, sg)
+        } catch (error) {
+          jsonResponse(res, 400, { error: 'Invalid JSON' })
+        }
+        return
+      }
+
+      // Sections endpoints
+      if (req.method === 'GET' && pathname === '/api/sections') {
+        const secs = await getAllSections()
+        jsonResponse(res, 200, { sections: secs })
+        return
+      }
+
+      if (req.method === 'POST' && pathname === '/api/sections') {
+        try {
+          const { notebookId, sectionGroupId, name } = await parseJsonBody(req)
+          if (!name || !notebookId) {
+            return jsonResponse(res, 400, { error: 'notebookId and name required' })
+          }
+          const sec = await createSection(notebookId, sectionGroupId || null, name)
+          jsonResponse(res, 201, sec)
+        } catch (error) {
+          jsonResponse(res, 400, { error: 'Invalid JSON' })
+        }
+        return
+      }
+
       // Document endpoints - now with authentication
       const idMatch = pathname.match(/^\/api\/documents\/(\w+)$/)
 
@@ -251,7 +320,7 @@ export function createApp() {
         return
       }      if (req.method === 'POST' && pathname === '/api/documents') {
         try {
-          const { title, content, tags } = await parseJsonBody(req)
+          const { title, content, tags, notebookId, sectionId } = await parseJsonBody(req)
 
           if (!title || !content) {
             return jsonResponse(res, 400, {
@@ -268,6 +337,8 @@ export function createApp() {
             content,
             tags: tags || [],
             userId,
+            notebookId,
+            sectionId,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           })

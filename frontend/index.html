@@ -407,6 +407,24 @@
                             <textarea id="noteContent" required></textarea>
                         </div>
                         <div class="form-group">
+                            <label for="noteNotebook">Notebook</label>
+                            <select id="noteNotebook"></select>
+                            <input type="text" id="newNotebookName" placeholder="New notebook">
+                            <button type="button" onclick="createNotebookUI()">Add</button>
+                        </div>
+                        <div class="form-group">
+                            <label for="noteSectionGroup">Section Group</label>
+                            <select id="noteSectionGroup"></select>
+                            <input type="text" id="newSectionGroupName" placeholder="New group">
+                            <button type="button" onclick="createSectionGroupUI()">Add</button>
+                        </div>
+                        <div class="form-group">
+                            <label for="noteSection">Section</label>
+                            <select id="noteSection"></select>
+                            <input type="text" id="newSectionName" placeholder="New section">
+                            <button type="button" onclick="createSectionUI()">Add</button>
+                        </div>
+                        <div class="form-group">
                             <label for="noteTags">Tags</label>
                             <div class="tag-input" onclick="focusTagInput()">
                                 <div id="tagList"></div>
@@ -434,6 +452,9 @@
         let allTags = new Set();
         let currentTags = [];
         let editingNote = null;
+        let notebooks = [];
+        let sectionGroups = [];
+        let sections = [];
         let accessToken = localStorage.getItem('accessToken');        let refreshToken = localStorage.getItem('refreshToken');
         
         // API Configuration - Auto-detect environment
@@ -612,6 +633,9 @@
             document.getElementById('authSection').classList.add('hidden');
             document.getElementById('appSection').classList.remove('hidden');
             document.getElementById('userWelcome').textContent = `Welcome, ${user.username}!`;
+            loadNotebooks();
+            loadSectionGroups();
+            loadSections();
             loadNotes();
         }
 
@@ -657,24 +681,98 @@
             }
         }
 
+        async function loadNotebooks() {
+            const res = await apiCall('/notebooks');
+            if (res.ok) {
+                const data = await res.json();
+                notebooks = data.notebooks;
+                const select = document.getElementById('noteNotebook');
+                select.innerHTML = '<option value="">(none)</option>' + notebooks.map(n => `<option value="${n.id}">${n.name}</option>`).join('');
+            }
+        }
+
+        async function loadSectionGroups() {
+            const res = await apiCall('/section-groups');
+            if (res.ok) {
+                const data = await res.json();
+                sectionGroups = data.sectionGroups;
+                const select = document.getElementById('noteSectionGroup');
+                select.innerHTML = '<option value="">(none)</option>' + sectionGroups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+            }
+        }
+
+        async function loadSections() {
+            const res = await apiCall('/sections');
+            if (res.ok) {
+                const data = await res.json();
+                sections = data.sections;
+                const select = document.getElementById('noteSection');
+                select.innerHTML = '<option value="">(none)</option>' + sections.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            }
+        }
+
+        async function createNotebookUI() {
+            const name = document.getElementById('newNotebookName').value.trim();
+            if (!name) return;
+            const res = await apiCall('/notebooks', {
+                method: 'POST',
+                body: JSON.stringify({ name })
+            });
+            if (res.ok) {
+                document.getElementById('newNotebookName').value = '';
+                await loadNotebooks();
+            }
+        }
+
+        async function createSectionGroupUI() {
+            const name = document.getElementById('newSectionGroupName').value.trim();
+            const notebookId = document.getElementById('noteNotebook').value;
+            if (!name || !notebookId) return;
+            const res = await apiCall('/section-groups', {
+                method: 'POST',
+                body: JSON.stringify({ notebookId, name })
+            });
+            if (res.ok) {
+                document.getElementById('newSectionGroupName').value = '';
+                await loadSectionGroups();
+            }
+        }
+
+        async function createSectionUI() {
+            const name = document.getElementById('newSectionName').value.trim();
+            const notebookId = document.getElementById('noteNotebook').value;
+            const sectionGroupId = document.getElementById('noteSectionGroup').value;
+            if (!name || !notebookId) return;
+            const res = await apiCall('/sections', {
+                method: 'POST',
+                body: JSON.stringify({ notebookId, sectionGroupId, name })
+            });
+            if (res.ok) {
+                document.getElementById('newSectionName').value = '';
+                await loadSections();
+            }
+        }
+
         async function handleSubmit(event) {
             event.preventDefault();
             
             const title = document.getElementById('noteTitle').value;
             const content = document.getElementById('noteContent').value;
             const tags = currentTags;
+            const notebookId = document.getElementById('noteNotebook').value || null;
+            const sectionId = document.getElementById('noteSection').value || null;
 
             try {
                 let response;
                 if (editingNote) {
                     response = await apiCall(`/documents/${editingNote.id}`, {
                         method: 'PUT',
-                        body: JSON.stringify({ title, content, tags })
+                        body: JSON.stringify({ title, content, tags, notebookId, sectionId })
                     });
                 } else {
                     response = await apiCall('/documents', {
                         method: 'POST',
-                        body: JSON.stringify({ title, content, tags })
+                        body: JSON.stringify({ title, content, tags, notebookId, sectionId })
                     });
                 }
 
@@ -798,6 +896,8 @@
                     <div class="note-meta">
                         <span>${new Date(note.createdAt || Date.now()).toLocaleDateString()}</span>
                         <span>${note.updatedAt ? 'Updated: ' + new Date(note.updatedAt).toLocaleDateString() : ''}</span>
+                        <span>${note.notebookId ? 'Notebook: ' + note.notebookId : ''}</span>
+                        <span>${note.sectionId ? 'Section: ' + note.sectionId : ''}</span>
                     </div>
                     <div class="note-title">${escapeHtml(note.title)}</div>
                     <div class="note-content">${escapeHtml(note.content)}</div>

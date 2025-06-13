@@ -180,6 +180,12 @@ and required table will be created automatically if they do not exist.
 - `GET /api/documents/:id` – get a document by id
 - `PUT /api/documents/:id` – update a document
 - `DELETE /api/documents/:id` – remove a document
+- `GET /api/notebooks` – list notebooks
+- `POST /api/notebooks` – create a notebook `{ name }`
+- `GET /api/section-groups` – list section groups
+- `POST /api/section-groups` – create a section group `{ notebookId, name }`
+- `GET /api/sections` – list sections
+- `POST /api/sections` – create a section `{ notebookId, sectionGroupId?, name }`
 
 By default, documents are stored in memory so they reset when the server restarts.
 Set a `DATA_FILE` path to persist them across sessions, or consider using a database for a real application.

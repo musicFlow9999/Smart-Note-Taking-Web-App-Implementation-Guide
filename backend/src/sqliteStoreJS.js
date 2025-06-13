@@ -95,19 +95,26 @@ export async function init(dbFilePath) {
     title TEXT NOT NULL,
     content TEXT NOT NULL,
     tags TEXT DEFAULT '[]',
+    notebook_id INTEGER,
+    section_id INTEGER,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     user_id TEXT
   )`)
 
-  // Ensure user_id column exists for older databases
+  // Ensure additional columns exist for older databases
   let hasUserId = false
+  let hasNotebook = false
+  let hasSection = false
   const pragmaStmt = db.prepare('PRAGMA table_info(documents)')
   while (pragmaStmt.step()) {
     const row = pragmaStmt.getAsObject()
     if (row.name === 'user_id') {
       hasUserId = true
-      break
+    } else if (row.name === 'notebook_id') {
+      hasNotebook = true
+    } else if (row.name === 'section_id') {
+      hasSection = true
     }
   }
   pragmaStmt.free()
@@ -121,6 +128,45 @@ export async function init(dbFilePath) {
       logger.error('Failed to add user_id column', { error: error.message })
     }
   }
+
+  if (!hasNotebook) {
+    try {
+      db.run('ALTER TABLE documents ADD COLUMN notebook_id INTEGER')
+      logger.info('Database migrated to add notebook_id column')
+    } catch (error) {
+      logger.error('Failed to add notebook_id column', { error: error.message })
+    }
+  }
+
+  if (!hasSection) {
+    try {
+      db.run('ALTER TABLE documents ADD COLUMN section_id INTEGER')
+      logger.info('Database migrated to add section_id column')
+    } catch (error) {
+      logger.error('Failed to add section_id column', { error: error.message })
+    }
+  }
+
+  db.run(`CREATE TABLE IF NOT EXISTS notebooks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`)
+
+  db.run(`CREATE TABLE IF NOT EXISTS section_groups (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    notebook_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`)
+
+  db.run(`CREATE TABLE IF NOT EXISTS sections (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    notebook_id INTEGER NOT NULL,
+    section_group_id INTEGER,
+    name TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`)
 
   db.run(`CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
@@ -169,7 +215,7 @@ function saveDatabase() {
 
 export function getAllDocuments(userId = null) {
   let query =
-    'SELECT id, title, content, tags, created_at, updated_at, user_id FROM documents'
+    'SELECT id, title, content, tags, notebook_id, section_id, created_at, updated_at, user_id FROM documents'
   let params = []
 
   if (userId) {
@@ -193,6 +239,8 @@ export function getAllDocuments(userId = null) {
       title: row.title,
       content: row.content,
       tags: JSON.parse(row.tags || '[]'),
+      notebookId: row.notebook_id,
+      sectionId: row.section_id,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       userId: row.user_id,
@@ -203,16 +251,23 @@ export function getAllDocuments(userId = null) {
 }
 
 export function createDocument(data) {
-  const { title, content, tags = [], userId = null } = data
+  const {
+    title,
+    content,
+    tags = [],
+    userId = null,
+    notebookId = null,
+    sectionId = null,
+  } = data
   const tagsJson = JSON.stringify(tags)
   const now = new Date().toISOString()
 
   try {
     // Execute the INSERT statement
     db.run(
-      `INSERT INTO documents (title, content, tags, created_at, updated_at, user_id) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [title, content, tagsJson, now, now, userId]
+      `INSERT INTO documents (title, content, tags, notebook_id, section_id, created_at, updated_at, user_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [title, content, tagsJson, notebookId, sectionId, now, now, userId]
     )
     
     // Get the last insert rowid
@@ -230,6 +285,8 @@ export function createDocument(data) {
       createdAt: now,
       updatedAt: now,
       userId,
+      notebookId,
+      sectionId,
     }
     saveDatabase()
     logger.info('Document created', { id: newDoc.id, title, userId })
@@ -242,7 +299,7 @@ export function createDocument(data) {
 
 export function getDocumentById(id) {
   const stmt = db.prepare(`
-    SELECT id, title, content, tags, created_at, updated_at, user_id 
+    SELECT id, title, content, tags, notebook_id, section_id, created_at, updated_at, user_id
     FROM documents WHERE id = ?
   `)
 
@@ -255,6 +312,8 @@ export function getDocumentById(id) {
         title: row.title,
         content: row.content,
         tags: JSON.parse(row.tags || '[]'),
+        notebookId: row.notebook_id,
+        sectionId: row.section_id,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
         userId: row.user_id,
@@ -284,6 +343,14 @@ export function updateDocument(id, data) {
   if (data.tags !== undefined) {
     updates.push('tags = ?')
     values.push(JSON.stringify(data.tags))
+  }
+  if (data.notebookId !== undefined) {
+    updates.push('notebook_id = ?')
+    values.push(data.notebookId)
+  }
+  if (data.sectionId !== undefined) {
+    updates.push('section_id = ?')
+    values.push(data.sectionId)
   }
 
   updates.push('updated_at = ?')
@@ -435,4 +502,85 @@ export function deleteRefreshToken(token) {
     logger.error('Failed to delete refresh token', { error: error.message })
     return false
   }
+}
+
+// Notebook, SectionGroup, and Section helpers
+export function getAllNotebooks() {
+  const stmt = db.prepare('SELECT id, name, created_at FROM notebooks')
+  const results = []
+  while (stmt.step()) {
+    const row = stmt.getAsObject()
+    results.push({ id: String(row.id), name: row.name, createdAt: row.created_at })
+  }
+  stmt.free()
+  return results
+}
+
+export function createNotebook(name) {
+  db.run('INSERT INTO notebooks (name) VALUES (?)', [name])
+  const stmt = db.prepare('SELECT last_insert_rowid() as id')
+  stmt.step()
+  const result = stmt.getAsObject()
+  stmt.free()
+  const id = String(result.id)
+  saveDatabase()
+  return { id, name }
+}
+
+export function getAllSectionGroups() {
+  const stmt = db.prepare('SELECT id, notebook_id, name, created_at FROM section_groups')
+  const results = []
+  while (stmt.step()) {
+    const row = stmt.getAsObject()
+    results.push({
+      id: String(row.id),
+      notebookId: row.notebook_id,
+      name: row.name,
+      createdAt: row.created_at,
+    })
+  }
+  stmt.free()
+  return results
+}
+
+export function createSectionGroup(notebookId, name) {
+  db.run('INSERT INTO section_groups (notebook_id, name) VALUES (?, ?)', [notebookId, name])
+  const stmt = db.prepare('SELECT last_insert_rowid() as id')
+  stmt.step()
+  const result = stmt.getAsObject()
+  stmt.free()
+  const id = String(result.id)
+  saveDatabase()
+  return { id, notebookId, name }
+}
+
+export function getAllSections() {
+  const stmt = db.prepare('SELECT id, notebook_id, section_group_id, name, created_at FROM sections')
+  const results = []
+  while (stmt.step()) {
+    const row = stmt.getAsObject()
+    results.push({
+      id: String(row.id),
+      notebookId: row.notebook_id,
+      sectionGroupId: row.section_group_id,
+      name: row.name,
+      createdAt: row.created_at,
+    })
+  }
+  stmt.free()
+  return results
+}
+
+export function createSection(notebookId, sectionGroupId, name) {
+  db.run(
+    'INSERT INTO sections (notebook_id, section_group_id, name) VALUES (?, ?, ?)',
+    [notebookId, sectionGroupId, name]
+  )
+  const stmt = db.prepare('SELECT last_insert_rowid() as id')
+  stmt.step()
+  const result = stmt.getAsObject()
+  stmt.free()
+  const id = String(result.id)
+  saveDatabase()
+  return { id, notebookId, sectionGroupId, name }
 }
