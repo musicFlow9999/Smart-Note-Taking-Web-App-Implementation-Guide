@@ -2,7 +2,7 @@
   "_comment_for_ai_assistants": "This project runs on Windows PowerShell locally, NOT Linux containers. Use Windows file paths and PowerShell commands during development.",
   "_environment": {
     "development_os": "Windows_NT",
-    "development_shell": "PowerShell", 
+    "development_shell": "PowerShell",
     "container": false,
     "production_target": "Azure App Service Linux"
   },
@@ -16,8 +16,8 @@
     "test:enhanced": "node test/enhanced.test.js",
     "test:auth": "node test/auth.test.js",
     "test:all": "npm test && npm run test:enhanced && npm run test:auth",
-    "lint": "eslint -c .eslintrc.json src/ test/",
-    "lint:fix": "eslint -c .eslintrc.json src/ test/ --fix",
+    "lint": "eslint src/ test/",
+    "lint:fix": "eslint src/ test/ --fix",
     "format": "prettier --write src/ test/"
   },
   "dependencies": {
