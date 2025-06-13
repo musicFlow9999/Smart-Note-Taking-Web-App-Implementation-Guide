@@ -43,13 +43,13 @@ jobs:
           az webapp config appsettings set \
             --resource-group smart-notes-rg-west \
             --name smart-notes-app-lamb2025 \
-            --settings \ 
-              "NODE_ENV=production" \ 
-              "JWT_SECRET=${{ secrets.JWT_SECRET }}" \ 
-              "FRONTEND_URL=https://smart-notes-app-lamb2025.azurewebsites.net" \ 
-              "DB_FILE=/tmp/notes_v2.db" \ 
-              "LOG_LEVEL=info" \ 
-              "JWT_EXPIRES_IN=24h"
+            --settings \
+              NODE_ENV=production \
+              JWT_SECRET=${{ secrets.JWT_SECRET }} \
+              FRONTEND_URL=https://smart-notes-app-lamb2025.azurewebsites.net \
+              DB_FILE=/tmp/notes_v2.db \
+              LOG_LEVEL=info \
+              JWT_EXPIRES_IN=24h
 
       - name: Restart web app
         run: az webapp restart --resource-group smart-notes-rg-west --name smart-notes-app-lamb2025
