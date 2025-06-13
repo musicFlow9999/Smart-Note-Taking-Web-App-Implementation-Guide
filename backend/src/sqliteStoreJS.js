@@ -1,7 +1,12 @@
 import initSqlJs from 'sql.js'
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 import logger from './logger.js'
+
+// ES modules dirname equivalent
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 let SQL
 let db
@@ -11,11 +16,61 @@ export async function init(dbFilePath) {
   dbPath = dbFilePath
   SQL = await initSqlJs()
 
-  // Ensure the directory exists
+  // Ensure the directory exists with robust error handling
   const dir = path.dirname(dbPath)
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true })
-    logger.info('Created database directory', { dir })
+  logger.debug('Checking database directory', { dir, dbPath })
+  
+  try {
+    if (!fs.existsSync(dir)) {
+      logger.info('Creating database directory', { dir })
+      fs.mkdirSync(dir, { recursive: true })
+      logger.info('Database directory created successfully', { dir })
+    } else {
+      logger.debug('Database directory already exists', { dir })
+    }
+    
+    // Verify directory is writable
+    fs.accessSync(dir, fs.constants.W_OK)
+    logger.debug('Database directory is writable', { dir })
+    
+  } catch (error) {
+    logger.error('Failed to create or access database directory', { 
+      dir, 
+      error: error.message,
+      code: error.code,
+      stack: error.stack 
+    })
+    
+    // Try alternative paths for Azure App Service
+    if (process.env.NODE_ENV === 'production') {
+      const altPaths = [
+        '/tmp/data',
+        path.join(process.cwd(), 'data'),
+        path.join(__dirname, '..', '..', 'data')
+      ]
+      
+      for (const altPath of altPaths) {
+        try {
+          logger.info('Trying alternative database path', { altPath })
+          if (!fs.existsSync(altPath)) {
+            fs.mkdirSync(altPath, { recursive: true })
+          }
+          fs.accessSync(altPath, fs.constants.W_OK)
+          
+          // Update dbPath to use the working alternative
+          const altDbPath = path.join(altPath, path.basename(dbPath))
+          logger.info('Using alternative database path', { original: dbPath, alternative: altDbPath })
+          dbPath = altDbPath
+          break
+          
+        } catch (altError) {
+          logger.warn('Alternative path failed', { altPath, error: altError.message })
+          continue
+        }
+      }
+    } else {
+      throw error
+    }
   }
 
   // Try to load existing database
