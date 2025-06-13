@@ -71,7 +71,7 @@ This document describes the interactions and roles of the AI agents involved in 
       "prettier": "^3.1.1"
     }
     ```
-  * **Repository Backup Trigger:** When the user writes "AGENT BACKUP REPO", immediately create a complete backup of the entire repository:
+  * **Repository Backup Trigger:** When the user writes "AGENT BACKUP REPO", immediately create a complete backup of the entire repository: (This applies only to claude)
     
     **Backup Process:**
     - Source: `C:\github\Smart-Note-Taking-Web-App-Implementation-Guide`
