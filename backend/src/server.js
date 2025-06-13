@@ -1,6 +1,7 @@
 import dotenv from 'dotenv'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
+import { readFileSync, existsSync } from 'fs'
 import http from 'http'
 import url from 'url'
 import logger from './logger.js'
@@ -318,9 +319,64 @@ export function createApp() {
         jsonResponse(res, 200, {
           status: 'healthy',
           timestamp: new Date().toISOString(),
-          version: process.env.npm_package_version || '1.0.0',
-        })
+          version: process.env.npm_package_version || '1.0.0',        })
         return
+      }
+
+      // Static file serving for frontend
+      if (!pathname.startsWith('/api/')) {
+        try {
+          let filePath = pathname
+          
+          // Default to index.html for root and other routes (SPA routing)
+          if (pathname === '/' || !pathname.includes('.')) {
+            filePath = '/index.html'
+          }
+          
+          const staticFilePath = join(__dirname, '../public', filePath)
+          
+          if (existsSync(staticFilePath)) {
+            const content = readFileSync(staticFilePath)
+            const ext = filePath.split('.').pop()
+            
+            // Set content type based on file extension
+            let contentType = 'text/html'
+            switch (ext) {
+              case 'js':
+                contentType = 'application/javascript'
+                break
+              case 'css':
+                contentType = 'text/css'
+                break
+              case 'json':
+                contentType = 'application/json'
+                break
+              case 'png':
+                contentType = 'image/png'
+                break
+              case 'jpg':
+              case 'jpeg':
+                contentType = 'image/jpeg'
+                break
+              case 'svg':
+                contentType = 'image/svg+xml'
+                break
+              case 'ico':
+                contentType = 'image/x-icon'
+                break
+            }
+            
+            setCorsHeaders(res)
+            res.writeHead(200, { 'Content-Type': contentType })
+            res.end(content)
+            return
+          }
+        } catch (error) {
+          logger.error('Error serving static file', { 
+            error: error.message, 
+            pathname 
+          })
+        }
       }
 
       // 404 for unmatched routes
