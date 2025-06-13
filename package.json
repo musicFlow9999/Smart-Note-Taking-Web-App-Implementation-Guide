@@ -1,0 +1,47 @@
+{
+  "name": "smart-note-taking-web-app",
+  "version": "0.1.0",
+  "description": "Smart Note-Taking Web Application - Implementation Guide",
+  "private": true,
+  "workspaces": [
+    "backend"
+  ],
+  "scripts": {
+    "install:backend": "cd backend && npm install",
+    "start": "cd backend && npm start",
+    "dev": "cd backend && npm run dev", 
+    "test": "cd backend && npm run test:all",
+    "lint": "cd backend && npm run lint",
+    "lint:fix": "cd backend && npm run lint:fix",
+    "format": "cd backend && npm run format",
+    "build": "echo 'No build step required for Node.js backend'",
+    "deploy": "echo 'Deployment handled by GitHub Actions'"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.1.1",
+    "@eslint/js": "^8.57.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "notes",
+    "web-app", 
+    "nodejs",
+    "sqlite",
+    "azure",
+    "smart-notes"
+  ],
+  "author": "Smart Notes Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/musicFlow9999/Smart-Note-Taking-Web-App-Implementation-Guide.git"
+  },
+  "bugs": {
+    "url": "https://github.com/musicFlow9999/Smart-Note-Taking-Web-App-Implementation-Guide/issues"
+  },
+  "homepage": "https://github.com/musicFlow9999/Smart-Note-Taking-Web-App-Implementation-Guide#readme"
+}
