@@ -37,22 +37,29 @@ export async function init(dbFilePath) {
     tags TEXT DEFAULT '[]',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    user_id TEXT NOT NULL
+    user_id TEXT
   )`)
 
-  // Migration: Add user_id column if it doesn't exist (for existing databases)
-  try {
-    db.run(`ALTER TABLE documents ADD COLUMN user_id TEXT`)
-  } catch (error) {
-    // Column already exists or other issue, continue
-    logger.info('user_id column may already exist', { error: error.message })
+  // Ensure user_id column exists for older databases
+  let hasUserId = false
+  const pragmaStmt = db.prepare('PRAGMA table_info(documents)')
+  while (pragmaStmt.step()) {
+    const row = pragmaStmt.getAsObject()
+    if (row.name === 'user_id') {
+      hasUserId = true
+      break
+    }
   }
+  pragmaStmt.free()
 
-  // Update any documents without user_id to have a default user_id
-  try {
-    db.run(`UPDATE documents SET user_id = 'legacy-user' WHERE user_id IS NULL`)
-  } catch (error) {
-    logger.info('Migration update completed or not needed', { error: error.message })
+  if (!hasUserId) {
+    try {
+      db.run('ALTER TABLE documents ADD COLUMN user_id TEXT')
+      db.run("UPDATE documents SET user_id = 'legacy-user' WHERE user_id IS NULL")
+      logger.info('Database migrated to add user_id column')
+    } catch (error) {
+      logger.error('Failed to add user_id column', { error: error.message })
+    }
   }
 
   db.run(`CREATE TABLE IF NOT EXISTS users (
