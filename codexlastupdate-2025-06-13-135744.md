@@ -119,18 +119,3 @@ Deployment continued to fail with `--name` argument missing when setting app set
 **For Code**
 - None
 
-
-# Database Schema Mismatch Resolution
-**Date**: 2025-06-13 13:55 UTC
-
-During local testing, existing SQLite files lacked `created_at` and `updated_at` columns.
-A new environment variable `RESET_DB_ON_START` can force deletion of the old database
-file so a fresh schema with notebooks and sections is created.
-
-### Next Steps
-**For Claude**
-- Set `RESET_DB_ON_START=true` in Azure App Settings to recreate the database
-- Verify notebook and section features work in production
-
-**For Code**
-- Monitor logs for successful database initialization

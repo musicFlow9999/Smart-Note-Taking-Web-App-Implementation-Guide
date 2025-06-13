@@ -172,6 +172,9 @@ Client Browser → Frontend (index.html) → API Calls → Backend Server
 To store notes in SQLite instead of memory, set the `DB_FILE` environment
 variable to the path of a `.db` file before starting the server. The database
 and required table will be created automatically if they do not exist.
+Set `RESET_DB_ON_START=true` to force the database file to be recreated on the
+next startup. This is useful if schema migrations fail or new tables are
+missing.
 
 ## API Endpoints
 
@@ -226,6 +229,7 @@ DB_FILE=<database-path>          # SQLite database location
 PORT=5000                        # Server port (defaults to 5000)
 LOG_LEVEL=info                   # Logging level
 JWT_EXPIRES_IN=24h               # Token expiration
+RESET_DB_ON_START=false         # Set to true to recreate DB on startup
 ```
 
 ## Next Steps

@@ -21,6 +21,24 @@ export async function init(dbFilePath) {
   dbPath = dbFilePath
   SQL = await initSqlJs()
 
+  const resetDb =
+    process.env.RESET_DB_ON_START === 'true' ||
+    process.env.RESET_DB_ON_START === '1'
+
+  if (resetDb && fs.existsSync(dbPath)) {
+    try {
+      fs.unlinkSync(dbPath)
+      logger.warn('Existing database removed due to RESET_DB_ON_START', {
+        path: dbPath,
+      })
+    } catch (error) {
+      logger.error('Failed to remove database during RESET_DB_ON_START', {
+        path: dbPath,
+        error: error.message,
+      })
+    }
+  }
+
   // Ensure the directory exists with robust error handling
   const dir = path.dirname(dbPath)
   logger.debug('Checking database directory', { dir, dbPath })

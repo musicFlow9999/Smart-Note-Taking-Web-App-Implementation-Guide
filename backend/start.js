@@ -8,6 +8,12 @@ app.listen(PORT, () => {
   console.log(`📝 API available at http://localhost:${PORT}/api/documents`)
   if (process.env.DB_FILE) {
     console.log(`💾 Using SQLite database: ${process.env.DB_FILE}`)
+    if (
+      process.env.RESET_DB_ON_START === 'true' ||
+      process.env.RESET_DB_ON_START === '1'
+    ) {
+      console.log('⚠️ RESET_DB_ON_START enabled - database will be recreated')
+    }
   } else if (process.env.DATA_FILE) {
     console.log(`📄 Using file storage: ${process.env.DATA_FILE}`)
   } else {
