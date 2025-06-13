@@ -31,7 +31,7 @@ graph TB
         subgraph "Azure App Service"
             WEBAPP[smart-notes-app-lamb2025<br/>azurewebsites.net]
             PROD_ENV[App Settings<br/>NODE_ENV=production<br/>JWT_SECRET=***<br/>FRONTEND_URL=prod-domain]
-            PROD_DB[SQLite DB<br/>/home/site/wwwroot/notes.db]
+            PROD_DB[SQLite DB<br/>/tmp/notes_v2.db]
             WEBAPP --> PROD_ENV
             WEBAPP --> PROD_DB
         end
@@ -272,7 +272,7 @@ If you prefer manual deployment to Azure App Service:
        NODE_ENV=production \
        JWT_SECRET="$(openssl rand -base64 32)" \
        FRONTEND_URL=https://your-app-name.azurewebsites.net \
-       DB_FILE=/home/site/wwwroot/notes.db
+       DB_FILE=/tmp/notes_v2.db
    ```
 
 4. **Deploy the application:**
@@ -296,7 +296,7 @@ If you prefer manual deployment to Azure App Service:
 | **Resource Group** | smart-notes-rg-west (West US) |
 | **App Service Plan** | smart-notes-plan (Free tier) |
 | **Runtime** | Node.js 20 LTS |
-| **Database** | SQLite (/home/site/wwwroot/notes.db) |
+| **Database** | SQLite (/tmp/notes_v2.db) |
 | **Environment** | Production |
 | **Security** | JWT + CORS + Rate Limiting |
 
@@ -305,7 +305,7 @@ If you prefer manual deployment to Azure App Service:
 NODE_ENV=production
 JWT_SECRET=lwnBztYuQywf9xtdRfomdWHeuRQXF5Y1ZOk3BWe8mDE=
 FRONTEND_URL=https://smart-notes-app-lamb2025.azurewebsites.net
-DB_FILE=/home/site/wwwroot/notes.db
+DB_FILE=/tmp/notes_v2.db
 LOG_LEVEL=info
 JWT_EXPIRES_IN=24h
 ```
@@ -386,7 +386,7 @@ flowchart TD
         subgraph WEB_APP ["🌐 Web Application"]
             APP_SERVICE["🖥️ App Service<br/>smart-notes-app-lamb2025<br/>Node.js 20 LTS Runtime"]
             APP_SETTINGS["⚙️ App Settings<br/>• NODE_ENV=production<br/>• JWT_SECRET=***<br/>• FRONTEND_URL=***<br/>• DB_FILE=***"]
-            FILE_SYSTEM["💾 File System<br/>SQLite Database<br/>/home/site/wwwroot/notes.db"]
+            FILE_SYSTEM["💾 File System<br/>SQLite Database<br/>/tmp/notes_v2.db"]
             
             APP_SERVICE_PLAN --> APP_SERVICE
             APP_SERVICE --> APP_SETTINGS

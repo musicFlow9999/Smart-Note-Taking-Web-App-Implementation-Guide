@@ -1,15 +1,15 @@
 # Smart Notes Azure App Service - Database Directory Creation Issue
 **Date**: June 13, 2025 05:55 UTC  
-**Status**: UNRESOLVED - Directory Creation Error Persists  
+**Status**: PARTIALLY RESOLVED - DB_FILE path updated to /tmp/notes_v2.db
 
 ## ⚠️ CRITICAL ISSUE: ENOENT Directory Creation Error
 
-The app is experiencing a 500 Internal Server Error when creating documents due to:
+The app previously threw 500 errors on document creation due to:
 ```
 ENOENT: no such file or directory, mkdir '/home/site/wwwroot/data'
 ```
 
-**Root Cause**: Azure App Service directory permissions preventing SQLite database directory creation.
+**Root Cause**: Azure App Service directory permissions prevented creating the original database directory.
 
 **Environment**: smart-notes-app-lamb2025.azurewebsites.net (smart-notes-rg-west)
 
@@ -26,12 +26,19 @@ ENOENT: no such file or directory, mkdir '/home/site/wwwroot/data'
 - Logs: Enhanced but directory creation still fails despite fallback logic
 
 ### Next Steps
-**IMMEDIATE**: 
-1. Change DB_FILE environment variable to writable Azure path (`/tmp/notes_v2.db` or `D:\home\data\notes_v2.db`)
-2. Test document creation API after path change
-3. Consider Kudu console access for manual directory testing
+**IMMEDIATE**:
+1. Verify the application writes to `/tmp/notes_v2.db` in Azure
+2. Deploy and test the document creation API
+3. Check Application Insights for any remaining errors
 
-**ALTERNATIVE SOLUTIONS**: 
-- Azure SQL Database for production-grade database
-- Azure Storage for file-based database storage
-- In-memory database for temporary testing
+**ALTERNATIVE SOLUTIONS**:
+- Explore Azure SQL or Azure Storage if `/tmp` path is not reliable
+- Use in-memory database for smoke tests
+
+**For Claude**
+- Monitor deployment logs for database initialization success
+- Confirm environment variables are correctly set in Azure
+
+**For Code**
+- Update `.env.production` and documentation with the new DB_FILE path
+- Document these steps in `codexlastupdate.md`
