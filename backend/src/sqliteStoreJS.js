@@ -101,11 +101,12 @@ export async function init(dbFilePath) {
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     user_id TEXT
   )`)
-
   // Ensure additional columns exist for older databases
   let hasUserId = false
   let hasNotebook = false
   let hasSection = false
+  let hasCreatedAt = false
+  let hasUpdatedAt = false
   const pragmaStmt = db.prepare('PRAGMA table_info(documents)')
   while (pragmaStmt.step()) {
     const row = pragmaStmt.getAsObject()
@@ -115,6 +116,10 @@ export async function init(dbFilePath) {
       hasNotebook = true
     } else if (row.name === 'section_id') {
       hasSection = true
+    } else if (row.name === 'created_at') {
+      hasCreatedAt = true
+    } else if (row.name === 'updated_at') {
+      hasUpdatedAt = true
     }
   }
   pragmaStmt.free()
@@ -137,13 +142,31 @@ export async function init(dbFilePath) {
       logger.error('Failed to add notebook_id column', { error: error.message })
     }
   }
-
   if (!hasSection) {
     try {
       db.run('ALTER TABLE documents ADD COLUMN section_id INTEGER')
       logger.info('Database migrated to add section_id column')
     } catch (error) {
       logger.error('Failed to add section_id column', { error: error.message })
+    }
+  }
+  if (!hasCreatedAt) {
+    try {
+      db.run('ALTER TABLE documents ADD COLUMN created_at DATETIME')
+      db.run("UPDATE documents SET created_at = datetime('now') WHERE created_at IS NULL")
+      logger.info('Database migrated to add created_at column')
+    } catch (error) {
+      logger.error('Failed to add created_at column', { error: error.message })
+    }
+  }
+
+  if (!hasUpdatedAt) {
+    try {
+      db.run('ALTER TABLE documents ADD COLUMN updated_at DATETIME')
+      db.run("UPDATE documents SET updated_at = datetime('now') WHERE updated_at IS NULL")
+      logger.info('Database migrated to add updated_at column')
+    } catch (error) {
+      logger.error('Failed to add updated_at column', { error: error.message })
     }
   }
 
@@ -184,14 +207,18 @@ export async function init(dbFilePath) {
     expires_at DATETIME NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id)
   )`)
-
   // Create indexes for better performance
   db.run(
     `CREATE INDEX IF NOT EXISTS idx_documents_user_id ON documents(user_id)`
   )
-  db.run(
-    `CREATE INDEX IF NOT EXISTS idx_documents_created_at ON documents(created_at)`
-  )
+  
+  // Only create created_at index if the column exists
+  if (hasCreatedAt) {
+    db.run(
+      `CREATE INDEX IF NOT EXISTS idx_documents_created_at ON documents(created_at)`
+    )
+  }
+  
   db.run(
     `CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id)`
   )

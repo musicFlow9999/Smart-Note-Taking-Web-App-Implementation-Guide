@@ -1,43 +1,80 @@
-name: Deploy to Azure
+name: Deploy to Azure App Service
 
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
-    environment: production
-
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+        
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
-
+          
       - name: Install dependencies
         run: npm install --prefix backend
-
-      - name: Run tests before deployment
+        
+      - name: Run linting
+        run: npm run lint --prefix backend
+        
+      - name: Run tests
         run: npm run test:all --prefix backend
+        
+      - name: Check formatting
+        run: npm run format --prefix backend -- --check
 
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+          
+      - name: Install dependencies
+        run: npm install --prefix backend --production=false
+        
+      - name: Run production build checks
+        run: |
+          npm run lint --prefix backend
+          npm run test:all --prefix backend
+          
+      - name: Prepare frontend for deployment
+        run: |
+          mkdir -p backend/public || true
+          cp frontend/index.html backend/public/index.html
+          
       - name: Login to Azure
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
+          
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: smart-notes-app-lamb2025
+          app-name: 'smart-notes-app-lamb2025'
           package: './backend'
-
+          
       - name: Set environment variables
         run: |
           az webapp config appsettings set \
@@ -50,12 +87,14 @@ jobs:
               DB_FILE=/tmp/notes_v2.db \
               LOG_LEVEL=info \
               JWT_EXPIRES_IN=24h
-
+            
       - name: Restart web app
-        run: az webapp restart --resource-group smart-notes-rg-west --name smart-notes-app-lamb2025
-
+        run: |
+          az webapp restart \
+            --resource-group smart-notes-rg-west \
+            --name smart-notes-app-lamb2025
+            
       - name: Health check
         run: |
           sleep 30
           curl -f https://smart-notes-app-lamb2025.azurewebsites.net/api/health || exit 1
-

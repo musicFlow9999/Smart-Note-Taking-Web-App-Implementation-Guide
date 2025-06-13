@@ -456,15 +456,14 @@
         let sectionGroups = [];
         let sections = [];
         let accessToken = localStorage.getItem('accessToken');        let refreshToken = localStorage.getItem('refreshToken');
-        
-        // API Configuration - Auto-detect environment
+          // API Configuration - Auto-detect environment
         const API_BASE = (() => {
             const hostname = window.location.hostname;
             const protocol = window.location.protocol;
             
             // If served from file:// protocol (local file)
             if (protocol === 'file:') {
-                return 'https://smart-notes-app-lamb2025.azurewebsites.net/api';
+                return 'http://localhost:5000/api';
             }
             
             // If served from localhost (development)
