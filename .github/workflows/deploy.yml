@@ -58,8 +58,7 @@ jobs:
         run: |
           npm run lint --prefix backend
           npm run test:all --prefix backend
-        
-      - name: Login to Azure
+          - name: Login to Azure
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
@@ -75,7 +74,13 @@ jobs:
           az webapp config appsettings set \
             --resource-group smart-notes-rg-west \
             --name smart-notes-app-lamb2025 \
-            --settings DATA_FILE=documents.json
+            --settings \
+              NODE_ENV=production \
+              JWT_SECRET="${{ secrets.JWT_SECRET || 'lwnBztYuQywf9xtdRfomdWHeuRQXF5Y1ZOk3BWe8mDE=' }}" \
+              FRONTEND_URL=https://smart-notes-app-lamb2025.azurewebsites.net \
+              DB_FILE=/home/site/wwwroot/notes.db \
+              LOG_LEVEL=info \
+              JWT_EXPIRES_IN=24h
             
       - name: Restart web app
         run: |
