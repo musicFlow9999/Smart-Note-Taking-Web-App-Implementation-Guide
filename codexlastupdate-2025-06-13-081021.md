@@ -90,16 +90,3 @@ always receives a value even if the secret is missing.
 
 **For Code**
 - None
-# Azure Set App Settings Fix
-**Date**: 2025-06-13 08:10 UTC
-
-Deployment failed again because `az webapp config appsettings set` did not receive the `--name` argument. The secret `AZURE_WEBAPP_NAME` was missing, so the command executed with an empty value.
-
-**Fix Implemented**: Hardcoded the Web App name `smart-notes-app-lamb2025` for the app settings and restart steps in `deploy.yml`.
-
-### Next Steps
-**For Claude**
-- Run the updated workflow and verify configuration values apply correctly
-
-**For Code**
-- None
