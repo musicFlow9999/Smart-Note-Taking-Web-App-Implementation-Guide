@@ -87,6 +87,22 @@ This document describes the interactions and roles of the AI agents involved in 
     Copy-Item -Path "C:\github\Smart-Note-Taking-Web-App-Implementation-Guide\*" -Destination $destination -Recurse -Exclude ".git"
     ```
 
+## CURRENT ISSUE STATUS (June 12, 2025)
+
+**ACTIVE PROBLEM:** Database Schema Issue - Document Creation Failing
+- **Error:** 500 Internal Server Error when creating notes
+- **Root Cause:** Missing `user_id` column in documents table on Azure database
+- **Evidence:** `"no such column: user_id"` error in logs during INSERT operations
+
+**RESOLUTION ATTEMPTS:**
+1. ✅ Added database migration code in `sqliteStoreJS.js` (commit a9181ee)
+2. 🔄 Deployed to Azure, but migration may not have executed properly
+3. ❓ Environment variables showing as null in Azure CLI (verification needed)
+
+**NEXT AGENT TASKS:**
+- **For Codex:** Test database migration success, consider forced DB recreation
+- **For Claude:** Monitor Azure logs, verify environment variable configuration
+
 ## Interaction Workflow
 
 1. **Feature Development Initiation:**
