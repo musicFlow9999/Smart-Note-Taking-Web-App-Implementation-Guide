@@ -50,3 +50,33 @@ export const deleteDocument = async (...args) => {
   await initializeStore()
   return store.deleteDocument(...args)
 }
+
+export const getAllNotebooks = async (...args) => {
+  await initializeStore()
+  return store.getAllNotebooks(...args)
+}
+
+export const createNotebook = async (...args) => {
+  await initializeStore()
+  return store.createNotebook(...args)
+}
+
+export const getAllSectionGroups = async (...args) => {
+  await initializeStore()
+  return store.getAllSectionGroups(...args)
+}
+
+export const createSectionGroup = async (...args) => {
+  await initializeStore()
+  return store.createSectionGroup(...args)
+}
+
+export const getAllSections = async (...args) => {
+  await initializeStore()
+  return store.getAllSections(...args)
+}
+
+export const createSection = async (...args) => {
+  await initializeStore()
+  return store.createSection(...args)
+}
