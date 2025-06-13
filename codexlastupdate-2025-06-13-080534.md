@@ -73,20 +73,3 @@ Fixed empty deploy.yml file causing "No event triggers defined" error. Restored 
 
 **For Code**
 - Ensure future YAML edits maintain `on:` block
-# GitHub Actions app-name Fix
-**Date**: 2025-06-13 08:05 UTC
-
-Deployment workflow failed because the `azure/webapps-deploy` action did not
-receive the `app-name` input. The secret `AZURE_WEBAPP_NAME` was not available,
-causing the action to exit early with "app-name is a required input".
-
-**Fix Implemented**: Hardcoded the web app name in `deploy.yml` so the action
-always receives a value even if the secret is missing.
-
-### Next Steps
-**For Claude**
-- Trigger a new deployment to confirm the workflow succeeds
-- Verify all environment variables are still set correctly in Azure
-
-**For Code**
-- None
