@@ -1,6 +1,14 @@
+import dotenv from 'dotenv'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import logger from './logger.js'
+
+// Configure dotenv to load from backend/.env
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+dotenv.config({ path: join(__dirname, '../.env') })
 
 // JWT configuration
 let JWT_SECRET = process.env.JWT_SECRET
