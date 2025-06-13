@@ -1,10 +1,9 @@
-Updated deployment workflow formatting to avoid YAML errors and ensure environment settings use GitHub secrets directly. Next steps listed below.
+Updated logger to automatically create the logs directory and adjusted README to mention the location of generated log files.
 
 **Next Steps**
 **For Claude**
-- Review Azure deployment logs for persistent rsync errors
-- Verify container stability after this workflow update
+- Monitor Azure startup logs to ensure the 503 error is resolved
 
 **For Code**
-- Investigate potential unhandled promise rejections in server code
-- Improve logging for startup and shutdown events
+- Verify backend tests after dependencies are installed
+- Continue improving error handling around file operations

@@ -1,4 +1,14 @@
 import winston from 'winston'
+import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
+import { existsSync, mkdirSync } from 'fs'
+
+// Ensure logs directory exists relative to project root
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const logDir = join(__dirname, '..', 'logs')
+if (!existsSync(logDir)) {
+  mkdirSync(logDir, { recursive: true })
+}
 
 const { combine, timestamp, errors, json, printf, colorize } = winston.format
 
@@ -34,13 +44,13 @@ const logger = winston.createLogger({
 if (process.env.NODE_ENV === 'production') {
   logger.add(
     new winston.transports.File({
-      filename: 'logs/error.log',
+      filename: join(logDir, 'error.log'),
       level: 'error',
     })
   )
   logger.add(
     new winston.transports.File({
-      filename: 'logs/combined.log',
+      filename: join(logDir, 'combined.log'),
     })
   )
 }

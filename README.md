@@ -145,15 +145,16 @@ Client Browser → Frontend (index.html) → API Calls → Backend Server
 2. Start the development server:
 
    ```bash
-   npm start
-   ```
+    npm start
+    ```
 
-   The API will be available at `http://localhost:5000` by default.
-   Set the `DATA_FILE` environment variable to persist documents to a JSON file.
-   Alternatively, provide a `DB_FILE` path to use a SQLite database.
-   You must set `JWT_SECRET` to a strong random value for consistent sessions.
-   Optionally set `FRONTEND_URL` to restrict CORS access (defaults to
-   `http://localhost:3000`).
+    The API will be available at `http://localhost:5000` by default.
+    Set the `DATA_FILE` environment variable to persist documents to a JSON file.
+    Alternatively, provide a `DB_FILE` path to use a SQLite database.
+    Log files are written to `backend/logs/` automatically when the server runs.
+    You must set `JWT_SECRET` to a strong random value for consistent sessions.
+    Optionally set `FRONTEND_URL` to restrict CORS access (defaults to
+    `http://localhost:3000`).
 
 3. Run the test suite:
 
