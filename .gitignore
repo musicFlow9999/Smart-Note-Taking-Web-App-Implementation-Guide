@@ -13,6 +13,9 @@ webapp-logs.zip
 # Log directories and files
 webapp-logs/
 LogFiles/
+app-logs/
+app-logs-latest.zip
+azure-logs.zip
 
 # Temporary working files
 *_new.html
