@@ -61,6 +61,21 @@ export function createUser(username, password, email) {
   return { id: user.id, username: user.username, email: user.email }
 }
 
+// Initialize default admin user for demo purposes
+function initializeDefaultUsers() {
+  if (!users.has('admin')) {
+    try {
+      const adminUser = createUser('admin', 'admin123', 'admin@example.com')
+      logger.info('Default admin user created for demo purposes', { userId: adminUser.id })
+    } catch (error) {
+      logger.warn('Failed to create default admin user', { error: error.message })
+    }
+  }
+}
+
+// Initialize default users on module load
+initializeDefaultUsers()
+
 export function authenticateUser(username, password) {
   const user = users.get(username)
   if (!user) {
