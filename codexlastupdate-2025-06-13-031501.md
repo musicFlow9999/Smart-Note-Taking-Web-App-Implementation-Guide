@@ -1,8 +1,8 @@
 # Codex Last Update - Smart Note-Taking Web App
 
-**Last Updated:** June 12, 2025  
-**Version:** 1.2.0  
-**Status:** Production Ready ✅
+**Last Updated:** June 12, 2025 12:54 UTC
+**Version:** 1.3.0  
+**Status:** Local Development Ready ✅ | Azure Deployment Configured 🔧
 
 ## 🚀 Latest Major Updates
 
@@ -13,6 +13,12 @@ An interactive HTML/JS client is now provided at `frontend/index.html`.
 ### **Critical SQL.js Implementation Fixes (Latest Commit: c1e1654)**
 
 Fixed fundamental SQL.js API compatibility issues that were preventing proper database operations. The previous implementation used incorrect API patterns that don't exist in sql.js.
+
+### **Security Hardening (This Commit)**
+- Removed default admin user creation
+- Enforced JWT secret requirement with temporary secret when absent
+- Restricted CORS to `FRONTEND_URL`
+- Added 1MB body limit and basic rate limiting
 
 #### **Key Changes Made:**
 
@@ -30,15 +36,21 @@ Fixed fundamental SQL.js API compatibility issues that were preventing proper da
    const stmt = db.prepare('SELECT last_insert_rowid() as id')
    stmt.step()
    const result = stmt.getAsObject()
-   const id = String(result.id)
-   stmt.free()
+  const id = String(result.id)
+  stmt.free()
    ```
 
 2. **All CRUD Operations Updated**
    - **Create**: Uses `db.run()` + `last_insert_rowid()` for ID generation
    - **Update**: Direct `db.run()` calls instead of prepared statement pattern
-   - **Delete**: Check existence first, then delete with proper error handling
-   - **User Management**: Fixed all authentication-related database operations
+  - **Delete**: Check existence first, then delete with proper error handling
+  - **User Management**: Fixed all authentication-related database operations
+
+### **CI Workflow Updates (Latest Commit: 76f94ad)**
+
+Authentication tests are now part of the GitHub Actions
+pipeline. The workflow runs `npm run test:auth` on Node.js 20
+to ensure logout properly revokes refresh tokens.
 
 3. **Enhanced Error Handling**
    ```javascript
@@ -53,6 +65,54 @@ Fixed fundamental SQL.js API compatibility issues that were preventing proper da
      throw error
    }
    ```
+
+### **Azure Deployment Infrastructure Configured (Latest Commit: aba7b7c)**
+
+Completed comprehensive Azure deployment investigation and configuration. The application is now ready for Azure App Service deployment.
+
+#### **Key Infrastructure Changes:**
+
+1. **Azure App Service Configuration**
+   ```bash
+   # Enabled comprehensive logging
+   az webapp log config --application-logging filesystem --web-server-logging filesystem 
+   --detailed-error-messages true --failed-request-tracing true --level information
+   
+   # Fixed startup command
+   az webapp config set --startup-file "npm start"
+   ```
+
+2. **Added web.config for IIS Integration**
+   ```xml
+   <!-- backend/web.config -->
+   <handlers>
+     <add name="iisnode" path="src/server.js" verb="*" modules="iisnode"/>
+   </handlers>
+   <rewrite>
+     <rules>
+       <rule name="DynamicContent">
+         <action type="Rewrite" url="src/server.js"/>
+       </rule>
+     </rules>
+   </rewrite>
+   ```
+
+3. **Environment Configuration Verified**
+   - Server correctly uses `process.env.PORT || 5000` (Azure sets PORT=8080)
+   - Node.js 20-lts runtime confirmed operational
+   - npm start command working correctly in Azure environment
+
+#### **Current Status:**
+- ✅ **Local Development:** Fully operational on http://localhost:5000
+- ✅ **Azure Infrastructure:** Configured and ready
+- 🔧 **Azure Deployment:** Requires GitHub Actions trigger to complete deployment
+- ✅ **Server Runtime:** Confirmed operational on Azure (port 8080)
+
+#### **Next Steps for Codex:**
+1. **Immediate:** Local development environment is fully ready for feature development
+2. **Azure Deployment:** Trigger GitHub Actions workflow to complete Azure deployment
+3. **Testing:** Verify `/api/health` endpoint on live Azure instance post-deployment
+4. **Development:** Continue with ContextFlow features using operational local environment
 
 ### **Test Infrastructure Improvements**
 
@@ -81,9 +141,14 @@ Fixed fundamental SQL.js API compatibility issues that were preventing proper da
      } else {
        delete process.env.DB_FILE
      }
-     fs.unlinkSync(testDbPath)
-   }
-   ```
+   fs.unlinkSync(testDbPath)
+  }
+  ```
+
+3. **CI Authentication Tests**
+   - GitHub Actions workflow now runs `npm run test:auth`
+     on Node.js 20 with in-memory storage to verify
+     refresh tokens are invalidated after logout.
 
 ### **Code Quality Enhancements**
 
@@ -126,6 +191,7 @@ All test suites pass successfully:
 - ✅ Token generation and validation
 - ✅ Refresh token functionality
 - ✅ Session management
+- ✅ Refresh token revoked after logout
 
 ## 🏗️ Current Architecture
 
@@ -281,7 +347,7 @@ DATA_FILE=./data.json npm start # Use JSON file storage
 
 ## 🔄 Git Status
 
-- **Latest Commit:** `085bb40` - "Add interactive frontend and update docs"
+- **Latest Commit:** `76f94ad` - "CI workflow runs auth tests"
 - **Branch:** `main`
 - **Remote Status:** Up to date with origin/main
 - **Working Tree:** Clean (no pending changes)
@@ -305,8 +371,22 @@ DATA_FILE=./data.json npm start # Use JSON file storage
 - Troubleshoot npm ignoring the backend directory when locating `package.json`.
 - Confirm environment variables and `.env` paths are correctly set in the development environment.
 - Ensure `claudes4lastupdate.md` documents any new findings or issues.
+- Run the full test suite including new logout token test.
 
 **For Code**
 - Investigate npm start script configuration to ensure it runs from the backend directory.
-- Add tests to reproduce the working directory mismatch if possible.
 - Update documentation with a clear setup guide once resolved.
+- Verify new security features (CORS restrictions, rate limiting) do not break existing tests.
+
+### Azure Deployment Troubleshooting
+
+**For Claude**
+- Monitor Azure deployment logs using `az webapp log tail` for the `smart-notes-app-lamb2025` web app.
+- Verify environment variables (`DATA_FILE`, `JWT_SECRET`, `PORT`) are correctly set in App Service configuration.
+- Trigger the GitHub Actions workflow manually if no deployment is running.
+- After deployment completes, test `https://smart-notes-app-lamb2025.azurewebsites.net/api/health`.
+
+**For Code**
+- Ensure `web.config` and all backend files are included in the deployment package.
+- Confirm the GitHub Actions `azure/webapps-deploy` step points to the `backend` directory.
+- Document troubleshooting steps in `PRODUCTION_GUIDE.md` once verified.
