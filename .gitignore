@@ -34,6 +34,8 @@ backend/*.db
 *.json
 !package.json
 !package-lock.json
+!.eslintrc.json
+!.prettierrc.json
 !backend/.eslintrc.json
 !backend/.prettierrc.json
 !azure.json
