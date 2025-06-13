@@ -90,6 +90,7 @@ always receives a value even if the secret is missing.
 
 **For Code**
 - None
+
 # Azure Set App Settings Fix
 **Date**: 2025-06-13 08:10 UTC
 
@@ -117,3 +118,4 @@ Deployment continued to fail with `--name` argument missing when setting app set
 
 **For Code**
 - None
+
