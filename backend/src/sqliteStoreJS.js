@@ -37,8 +37,23 @@ export async function init(dbFilePath) {
     tags TEXT DEFAULT '[]',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    user_id TEXT
+    user_id TEXT NOT NULL
   )`)
+
+  // Migration: Add user_id column if it doesn't exist (for existing databases)
+  try {
+    db.run(`ALTER TABLE documents ADD COLUMN user_id TEXT`)
+  } catch (error) {
+    // Column already exists or other issue, continue
+    logger.info('user_id column may already exist', { error: error.message })
+  }
+
+  // Update any documents without user_id to have a default user_id
+  try {
+    db.run(`UPDATE documents SET user_id = 'legacy-user' WHERE user_id IS NULL`)
+  } catch (error) {
+    logger.info('Migration update completed or not needed', { error: error.message })
+  }
 
   db.run(`CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
