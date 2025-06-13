@@ -61,15 +61,3 @@ creating notes.
 **For Code**
 - Expand tests to cover notebook and section features
 - Refine UI styling for new fields
-
-## GitHub Actions Deployment Fix
-**Date**: 2025-06-13 07:59 UTC
-
-Fixed empty deploy.yml file causing "No event triggers defined" error. Restored deployment workflow with push and manual triggers.
-
-### Next Steps
-**For Claude**
-- Trigger new deployment and monitor logs
-
-**For Code**
-- Ensure future YAML edits maintain `on:` block
