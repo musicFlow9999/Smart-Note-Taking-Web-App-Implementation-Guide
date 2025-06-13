@@ -92,8 +92,7 @@ jobs:
           az webapp restart \
             --resource-group smart-notes-rg-west \
             --name smart-notes-app-lamb2025
-            
-      - name: Health check
+              - name: Health check
         run: |
           sleep 30
-          curl -f https://smart-notes-app-lamb2025.azurewebsites.net/api/documents || exit 1
+          curl -f https://smart-notes-app-lamb2025.azurewebsites.net/api/health || exit 1
