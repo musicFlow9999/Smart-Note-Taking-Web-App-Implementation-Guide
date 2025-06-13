@@ -57,10 +57,9 @@ jobs:
         run: |
           npm run lint --prefix backend
           npm run test:all --prefix backend
-          
-      - name: Prepare frontend for deployment
+            - name: Prepare frontend for deployment
         run: |
-          mkdir -p backend/public
+          mkdir -p backend/public || true
           cp frontend/index.html backend/public/index.html
         
       - name: Login to Azure
