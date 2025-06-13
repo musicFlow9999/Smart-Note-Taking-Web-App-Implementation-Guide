@@ -4,6 +4,11 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import logger from './logger.js'
 
+// ENVIRONMENT CONTEXT FOR AI ASSISTANTS  
+// OS: Windows_NT | Shell: PowerShell | NOT Linux Container
+// Database path uses Windows conventions when developing locally
+// Deployed to Azure App Service Linux containers in production
+
 // ES modules dirname equivalent
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)

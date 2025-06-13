@@ -1,4 +1,11 @@
 {
+  "_comment_for_ai_assistants": "This project runs on Windows PowerShell locally, NOT Linux containers. Use Windows file paths and PowerShell commands during development.",
+  "_environment": {
+    "development_os": "Windows_NT",
+    "development_shell": "PowerShell", 
+    "container": false,
+    "production_target": "Azure App Service Linux"
+  },
   "name": "smart-notes-backend",
   "version": "0.1.0",
   "type": "module",

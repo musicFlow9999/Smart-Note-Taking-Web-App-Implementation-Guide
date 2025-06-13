@@ -1,3 +1,8 @@
+# Smart Note Taking Web App
+
+<!-- ENVIRONMENT CONTEXT FOR AI ASSISTANTS -->
+<!-- OS: Windows_NT | Shell: PowerShell | Container: false | Path: C:\github\Smart-Note-Taking-Web-App-Implementation-Guide -->
+
 # Smart-Note-Taking-Web-App-Implementation-Guide
 
 This repository contains a simple Node.js backend used to experiment with a smart note taking API.
@@ -473,7 +478,7 @@ graph LR
 | **6. Linting** | ESLint | `npm run lint --prefix backend` | ~10s | ✅ |
 | **7. Testing** | Jest | `npm run test:all --prefix backend` | ~20s | ✅ |
 | **8. Format Check** | Prettier | `npm run format --check` | ~5s | ✅ |
-| **9. Production Build** | npm | Re-run tests for production | ~15s | ✅ |
+| **9. Production Build** | npm | Re-run all tests for production | ~15s | ✅ |
 | **10. Azure Login** | Azure CLI | `azure/login@v1` with secrets | ~10s | ✅ |
 | **11. Deploy** | Azure | `azure/webapps-deploy@v2` | ~60s | ✅ |
 | **12. Configure** | Azure CLI | Set environment variables | ~10s | ✅ |
@@ -621,5 +626,5 @@ strategy:
 - ✅ **Rollback Ready**: Previous versions available for quick revert
 
 
-#   A z u r e   d e p l o y m e n t   t e s t   -   0 6 / 1 2 / 2 0 2 5   2 1 : 1 8 : 1 8  
+#   A z u r e   d e p l o y m e n t   t e s t   -   0 6 / 1 2 / 2 0 2 5   2 1 : 1 8 : 1 8 
  

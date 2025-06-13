@@ -427,3 +427,8 @@ if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
     })
   })
 }
+
+// ENVIRONMENT CONTEXT FOR AI ASSISTANTS
+// OS: Windows_NT | Shell: PowerShell | NOT Linux Container
+// Working Directory: C:\github\Smart-Note-Taking-Web-App-Implementation-Guide
+// Use PowerShell commands, NOT bash commands
