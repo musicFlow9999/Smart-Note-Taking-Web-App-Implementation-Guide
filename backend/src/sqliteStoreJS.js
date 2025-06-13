@@ -1,24 +1,32 @@
 import initSqlJs from 'sql.js'
 import fs from 'fs'
+import path from 'path'
 import logger from './logger.js'
 
 let SQL
 let db
 let dbPath
 
-export async function init(path) {
-  dbPath = path
+export async function init(dbFilePath) {
+  dbPath = dbFilePath
   SQL = await initSqlJs()
+
+  // Ensure the directory exists
+  const dir = path.dirname(dbPath)
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
+    logger.info('Created database directory', { dir })
+  }
 
   // Try to load existing database
   try {
     const data = fs.readFileSync(dbPath)
     db = new SQL.Database(data)
-    logger.info('Database loaded from file', { path })
+    logger.info('Database loaded from file', { path: dbPath })
   } catch (err) {
     // Create new database if file doesn't exist
     db = new SQL.Database()
-    logger.info('New database created', { path })
+    logger.info('New database created', { path: dbPath })
   }
 
   // Create tables if they don't exist
