@@ -249,9 +249,7 @@ export function createApp() {
           jsonResponse(res, 404, { error: 'Not found' })
         }
         return
-      }
-
-      if (req.method === 'POST' && pathname === '/api/documents') {
+      }      if (req.method === 'POST' && pathname === '/api/documents') {
         try {
           const { title, content, tags } = await parseJsonBody(req)
 
@@ -261,10 +259,15 @@ export function createApp() {
             })
           }
 
+          // TODO: Extract userId from JWT authentication when auth is implemented
+          // For now, use a default userId for testing
+          const userId = 'default-user-id'
+
           const doc = await createDocument({
             title,
             content,
             tags: tags || [],
+            userId,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           })
