@@ -35,18 +35,24 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          app-name: smart-notes-app-lamb2025
           package: './backend'
 
       - name: Set environment variables
         run: |
           az webapp config appsettings set \
             --resource-group smart-notes-rg-west \
-            --name ${{ secrets.AZURE_WEBAPP_NAME }} \
-            --settings NODE_ENV=production JWT_SECRET=${{ secrets.JWT_SECRET }} FRONTEND_URL=https://smart-notes-app-lamb2025.azurewebsites.net DB_FILE=/tmp/notes_v2.db LOG_LEVEL=info JWT_EXPIRES_IN=24h
+            --name smart-notes-app-lamb2025 \
+            --settings \ 
+              "NODE_ENV=production" \ 
+              "JWT_SECRET=${{ secrets.JWT_SECRET }}" \ 
+              "FRONTEND_URL=https://smart-notes-app-lamb2025.azurewebsites.net" \ 
+              "DB_FILE=/tmp/notes_v2.db" \ 
+              "LOG_LEVEL=info" \ 
+              "JWT_EXPIRES_IN=24h"
 
       - name: Restart web app
-        run: az webapp restart --resource-group smart-notes-rg-west --name ${{ secrets.AZURE_WEBAPP_NAME }}
+        run: az webapp restart --resource-group smart-notes-rg-west --name smart-notes-app-lamb2025
 
       - name: Health check
         run: |
