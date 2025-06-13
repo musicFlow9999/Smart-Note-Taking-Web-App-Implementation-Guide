@@ -315,104 +315,149 @@ JWT_EXPIRES_IN=24h
 ## 🔄 CI/CD Pipeline Architecture
 
 ```mermaid
+flowchart TD
+    subgraph DEV_ENV ["🖥️ Development Environment"]
+        DEV["👨‍💻 Developer"]
+        LOCAL_CODE["� Local Code<br/>• Edit files<br/>• Run tests<br/>• Debug locally"]
+        LOCAL_TEST["🧪 Local Testing<br/>npm test<br/>npm run lint"]
+        GIT_COMMIT["📝 Git Operations<br/>git add .<br/>git commit<br/>git push origin main"]
+        
+        DEV --> LOCAL_CODE
+        LOCAL_CODE --> LOCAL_TEST
+        LOCAL_TEST --> GIT_COMMIT
+    end
+
+    subgraph GITHUB ["📁 GitHub Repository"]
+        MAIN_BRANCH["🌿 Main Branch<br/>Protected Branch"]
+        WEBHOOK["🔔 Webhook<br/>Triggers on push"]
+        SECRETS["🔐 Repository Secrets<br/>AZURE_CREDENTIALS<br/>Deploy tokens"]
+        
+        GIT_COMMIT --> MAIN_BRANCH
+        MAIN_BRANCH --> WEBHOOK
+        SECRETS -.-> WEBHOOK
+    end
+
+    subgraph CI_PIPELINE ["⚙️ GitHub Actions Pipeline"]
+        subgraph QUALITY_GATES ["🛡️ Quality Gates"]
+            CHECKOUT["📥 Checkout<br/>actions/checkout@v4"]
+            NODE_SETUP["🔧 Node.js Setup<br/>Node 20.x + npm cache"]
+            DEPENDENCIES["📦 Dependencies<br/>npm install --prefix backend"]
+            LINTING["🔍 ESLint<br/>npm run lint"]
+            TESTING["🧪 Jest Tests<br/>npm run test:all"]
+            FORMATTING["📝 Prettier<br/>npm run format --check"]
+        end
+        
+        subgraph DEPLOYMENT ["🚀 Deployment Process"]
+            PROD_CHECK["✅ Production Checks<br/>Re-run all tests"]
+            AZURE_LOGIN["🔐 Azure Login<br/>Service Principal Auth"]
+            DEPLOY_APP["� Deploy App<br/>azure/webapps-deploy@v2"]
+            SET_ENV["⚙️ Environment Variables<br/>az webapp config appsettings"]
+            RESTART_APP["🔄 Restart App<br/>az webapp restart"]
+            HEALTH_CHECK["🏥 Health Check<br/>curl -f /api/documents"]
+        end
+        
+        CHECKOUT --> NODE_SETUP
+        NODE_SETUP --> DEPENDENCIES
+        DEPENDENCIES --> LINTING
+        LINTING --> TESTING
+        TESTING --> FORMATTING
+        FORMATTING --> PROD_CHECK
+        PROD_CHECK --> AZURE_LOGIN
+        AZURE_LOGIN --> DEPLOY_APP
+        DEPLOY_APP --> SET_ENV
+        SET_ENV --> RESTART_APP
+        RESTART_APP --> HEALTH_CHECK
+    end
+
+    subgraph AZURE_CLOUD ["☁️ Azure Cloud Platform"]
+        subgraph AZURE_RESOURCES ["🏗️ Azure Resources"]
+            RESOURCE_GROUP["🗂️ Resource Group<br/>smart-notes-rg-west<br/>West US Region"]
+            APP_SERVICE_PLAN["📋 App Service Plan<br/>smart-notes-plan<br/>B1 Basic Tier"]
+            
+            RESOURCE_GROUP --> APP_SERVICE_PLAN
+        end
+        
+        subgraph WEB_APP ["🌐 Web Application"]
+            APP_SERVICE["🖥️ App Service<br/>smart-notes-app-lamb2025<br/>Node.js 20 LTS Runtime"]
+            APP_SETTINGS["⚙️ App Settings<br/>• NODE_ENV=production<br/>• JWT_SECRET=***<br/>• FRONTEND_URL=***<br/>• DB_FILE=***"]
+            FILE_SYSTEM["💾 File System<br/>SQLite Database<br/>/home/site/wwwroot/notes.db"]
+            
+            APP_SERVICE_PLAN --> APP_SERVICE
+            APP_SERVICE --> APP_SETTINGS
+            APP_SERVICE --> FILE_SYSTEM
+        end
+        
+        subgraph MONITORING ["� Monitoring & Logs"]
+            APP_INSIGHTS["📈 Application Insights<br/>Performance Monitoring"]
+            LOGS["📋 Application Logs<br/>Real-time logging"]
+            ALERTS["🚨 Alerts<br/>Health monitoring"]
+            
+            APP_SERVICE --> APP_INSIGHTS
+            APP_SERVICE --> LOGS
+            APP_INSIGHTS --> ALERTS
+        end
+    end
+
+    subgraph USERS ["👥 End Users"]
+        BROWSER["🌐 Web Browser"]
+        API_REQUESTS["📡 API Requests<br/>HTTPS + CORS<br/>JWT Authentication"]
+        
+        BROWSER --> API_REQUESTS
+    end
+
+    %% Main flow connections
+    WEBHOOK --> CHECKOUT
+    HEALTH_CHECK --> APP_SERVICE
+    API_REQUESTS --> APP_SERVICE
+
+    %% Parallel testing workflow
+    subgraph MATRIX_TESTING ["🔄 Matrix Testing (Parallel)"]
+        NODE18["🔧 Node.js 18<br/>Memory + File + SQLite"]
+        NODE20["🔧 Node.js 20<br/>Memory + File + SQLite"]
+        NODE22["🔧 Node.js 22<br/>Memory + File + SQLite"]
+        
+        DEPENDENCIES -.-> NODE18
+        DEPENDENCIES -.-> NODE20
+        DEPENDENCIES -.-> NODE22
+    end
+
+    %% Styling
+    classDef devStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef githubStyle fill:#f5f5f5,stroke:#333,stroke-width:2px
+    classDef ciStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef azureStyle fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef userStyle fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef qualityStyle fill:#fff8e1,stroke:#f9a825,stroke-width:2px
+    classDef deployStyle fill:#e0f2f1,stroke:#00695c,stroke-width:2px
+
+    class DEV_ENV devStyle
+    class GITHUB githubStyle
+    class CI_PIPELINE,MATRIX_TESTING ciStyle
+    class AZURE_CLOUD azureStyle
+    class USERS userStyle
+    class QUALITY_GATES qualityStyle
+    class DEPLOYMENT deployStyle
+```
+
+### 🎯 Pipeline Flow Summary
+
+```mermaid
 graph LR
-    subgraph "Developer Workflow"
-        DEV[👨‍💻 Developer]
-        LOCAL[🖥️ Local Development<br/>backend/.env<br/>npm start]
-        COMMIT[📝 Git Commit<br/>git add .<br/>git commit -m "..."]
-        DEV --> LOCAL
-        LOCAL --> COMMIT
-    end
-
-    subgraph "GitHub Repository"
-        REPO[📁 Repository<br/>main branch]
-        PR[🔀 Pull Request<br/>(optional)]
-        WEBHOOK[🔔 Webhook Trigger]
-        COMMIT --> REPO
-        REPO --> PR
-        PR --> REPO
-        REPO --> WEBHOOK
-    end    subgraph "GitHub Actions CI/CD"
-        TRIGGER[⚡ Workflow Trigger<br/>on: push to main]
-        CHECKOUT[📥 Checkout Code<br/>actions/checkout@v4]
-        SETUP[⚙️ Setup Node.js<br/>actions/setup-node@v4<br/>Node 20.x + cache]
-        INSTALL[📦 Install Dependencies<br/>npm install --prefix backend]
-        LINT[🔍 Code Linting<br/>npm run lint]
-        TEST[🧪 Run Tests<br/>npm run test:all]
-        FORMAT[📝 Format Check<br/>npm run format --check]
-        BUILD[🏗️ Production Build Check<br/>Re-run tests for production]
-        LOGIN[🔐 Azure Login<br/>azure/login@v1]
-        DEPLOY[🚀 Deploy to Azure<br/>azure/webapps-deploy@v2]
-        CONFIG[⚙️ Set Environment Vars<br/>az webapp config appsettings]
-        RESTART[🔄 Restart App<br/>az webapp restart]
-        HEALTH[🏥 Health Check<br/>curl API endpoint]
-        
-        TRIGGER --> CHECKOUT
-        CHECKOUT --> SETUP
-        SETUP --> INSTALL
-        INSTALL --> LINT
-        LINT --> TEST
-        TEST --> FORMAT
-        FORMAT --> BUILD
-        BUILD --> LOGIN
-        LOGIN --> DEPLOY
-        DEPLOY --> CONFIG
-        CONFIG --> RESTART
-        RESTART --> HEALTH
-        
-        WEBHOOK --> TRIGGER
-    end
-
-    subgraph "Azure Cloud Platform"
-        subgraph "Azure App Service"
-            WEBAPP[🌐 Web App<br/>smart-notes-app-lamb2025<br/>azurewebsites.net]
-            LOGS[📊 Application Logs<br/>Azure Monitor]
-            METRICS[📈 Metrics & Alerts<br/>Performance Monitoring]
-        end
-        
-        subgraph "Azure Resources"
-            RG[🗂️ Resource Group<br/>smart-notes-rg-west]
-            PLAN[📋 App Service Plan<br/>smart-notes-plan<br/>B1 Basic]
-            STORAGE[💾 File System<br/>SQLite Database<br/>/home/site/wwwroot/]
-        end
-        
-        RG --> PLAN
-        PLAN --> WEBAPP
-        WEBAPP --> STORAGE
-        WEBAPP --> LOGS
-        WEBAPP --> METRICS
-    end
-
-    subgraph "Environment Configuration"
-        ENV_VARS[⚙️ Environment Variables<br/>NODE_ENV=production<br/>JWT_SECRET=***<br/>FRONTEND_URL=***<br/>DB_FILE=***]
-        SECRETS[🔐 Azure Key Vault<br/>(Future Enhancement)]
-        ENV_VARS --> WEBAPP
-        SECRETS -.->|Optional| WEBAPP
-    end
-
-    subgraph "Monitoring & Feedback"
-        HEALTH[🏥 Health Checks<br/>Application Insights]
-        ALERTS[🚨 Alerts & Notifications<br/>Email/Teams/Slack]
-        ROLLBACK[↩️ Rollback Capability<br/>Azure Deployment Slots]
-        
-        WEBAPP --> HEALTH
-        HEALTH --> ALERTS
-        DEPLOY -.->|If needed| ROLLBACK
-    end
-
-    DEPLOY --> WEBAPP
+    A["👨‍💻 Developer<br/>Push Code"] --> B["📁 GitHub<br/>Webhook Trigger"]
+    B --> C["⚙️ GitHub Actions<br/>Quality Gates"]
+    C --> D["🧪 Tests Pass?"]
+    D -->|✅ Yes| E["🚀 Deploy to Azure"]
+    D -->|❌ No| F["🚫 Block Deployment"]
+    E --> G["🏥 Health Check"]
+    G -->|✅ Success| H["🌐 Live Application"]
+    G -->|❌ Fail| I["📧 Alert Team"]
     
-    classDef dev fill:#e3f2fd
-    classDef github fill:#f5f5f5
-    classDef azure fill:#0078d4,color:#fff
-    classDef config fill:#fff3e0
-    classDef monitor fill:#e8f5e8
-
-    class DEV,LOCAL,COMMIT dev
-    class REPO,PR,WEBHOOK,TRIGGER,CHECKOUT,SETUP,INSTALL,TEST,BUILD,DEPLOY github
-    class WEBAPP,LOGS,METRICS,RG,PLAN,STORAGE azure
-    class ENV_VARS,SECRETS config
-    class HEALTH,ALERTS,ROLLBACK monitor
+    classDef success fill:#d4edda,stroke:#155724,stroke-width:2px
+    classDef error fill:#f8d7da,stroke:#721c24,stroke-width:2px
+    classDef process fill:#cce5ff,stroke:#0066cc,stroke-width:2px
+      class A,B,C,E,H process
+    class D,G process
+    class F,I error
 ```
 
 ### 🔧 Pipeline Stages Breakdown
@@ -436,43 +481,76 @@ graph LR
 
 **Total Pipeline Time: ~4-5 minutes**
 
-### 🔄 Deployment Flow Details
+### 🔄 Detailed Pipeline Sequence
 
 ```mermaid
 sequenceDiagram
     participant Dev as 👨‍💻 Developer
-    participant Git as 📁 GitHub Repo
-    participant GA as ⚙️ GitHub Actions
+    participant Local as 🖥️ Local Env
+    participant Git as 📁 GitHub
+    participant Actions as ⚙️ GitHub Actions
     participant Azure as ☁️ Azure App Service
+    participant Monitor as 📊 Monitoring
     participant User as 👤 End User
 
-    Dev->>Git: git push main
-    Note over Git: Code in main branch
+    Note over Dev,Local: Development Phase
+    Dev->>Local: Code changes
+    Dev->>Local: npm test (local)
+    Dev->>Local: npm run lint
+    Local-->>Dev: ✅ Tests pass locally
     
-    Git->>GA: Webhook trigger
-    Note over GA: Workflow starts
+    Note over Dev,Git: Source Control
+    Dev->>Git: git add . && git commit
+    Dev->>Git: git push origin main
+    Note over Git: Protected main branch
     
-    GA->>GA: Checkout code
-    GA->>GA: Setup Node.js 20
-    GA->>GA: npm ci (install deps)
-    GA->>GA: npm test (run tests)
+    Note over Git,Actions: CI/CD Pipeline Trigger
+    Git->>Actions: Webhook: push to main
+    Actions->>Actions: 🔄 Workflow: "Deploy to Azure"
     
-    alt Tests Pass
-        GA->>GA: npm run build
-        GA->>Azure: Deploy to App Service
-        Azure->>Azure: Update environment
-        Azure->>Azure: Restart application
-        Azure-->>GA: Deployment success
-        GA-->>Git: Update status ✅
-    else Tests Fail
-        GA-->>Git: Update status ❌
-        Note over GA: Deployment cancelled
+    Note over Actions: Quality Gates (4-5 min)
+    Actions->>Actions: 📥 Checkout code (actions/checkout@v4)
+    Actions->>Actions: ⚙️ Setup Node.js 20 + npm cache
+    Actions->>Actions: 📦 npm install --prefix backend
+    Actions->>Actions: 🔍 ESLint: npm run lint
+    Actions->>Actions: 🧪 Jest: npm run test:all
+    Actions->>Actions: 📝 Prettier: format check
+    
+    alt Quality Gates Pass
+        Note over Actions: Production Deployment
+        Actions->>Actions: ✅ Production build checks
+        Actions->>Actions: 🔐 Azure login (Service Principal)
+        Actions->>Azure: 🚀 Deploy (azure/webapps-deploy@v2)
+        Azure->>Azure: 📦 Extract application files
+        Actions->>Azure: ⚙️ Set environment variables
+        Actions->>Azure: 🔄 Restart web app
+        Azure->>Azure: 🏗️ Initialize Node.js runtime
+        Azure->>Azure: 🗄️ Connect to SQLite database
+        Actions->>Azure: 🏥 Health check (curl /api/documents)
+        Azure-->>Actions: ✅ Health check passed
+        Actions-->>Git: 🎉 Deployment SUCCESS
+        
+        Note over Azure,Monitor: Post-Deployment
+        Azure->>Monitor: 📊 Application metrics
+        Azure->>Monitor: 📋 Application logs
+        Monitor->>Monitor: 📈 Performance tracking
+        
+    else Quality Gates Fail
+        Actions-->>Git: ❌ Deployment BLOCKED
+        Note over Actions: No deployment occurs
+        Actions->>Dev: 📧 Notification: Fix issues
     end
     
-    User->>Azure: HTTPS request
-    Azure-->>User: Application response
+    Note over User,Azure: Application Usage
+    User->>Azure: 🌐 HTTPS request
+    Azure->>Azure: 🔐 JWT authentication
+    Azure->>Azure: 🗄️ SQLite query
+    Azure-->>User: 📄 JSON response
     
-    Note over Azure: Continuous monitoring
+    Note over Monitor: Continuous Monitoring
+    Monitor->>Monitor: 🚨 Health checks every 5min
+    Monitor->>Monitor: 📊 Performance analysis
+    Monitor->>Monitor: 🔍 Error tracking
 ```
 
 ### 🛡️ Pipeline Security & Quality Gates
